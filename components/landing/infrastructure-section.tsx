@@ -3,12 +3,12 @@
 import { useEffect, useState, useRef } from "react";
 
 const locations = [
-  { city: "San Francisco", region: "US West", latency: "12ms" },
-  { city: "New York", region: "US East", latency: "18ms" },
-  { city: "London", region: "Europe", latency: "24ms" },
-  { city: "Tokyo", region: "Asia Pacific", latency: "32ms" },
-  { city: "Sydney", region: "Oceania", latency: "45ms" },
-  { city: "Sao Paulo", region: "South America", latency: "38ms" },
+  { city: "R300. Once.", region: "No subscription. No trial. No upsell.", latency: "Flat" },
+  { city: "We don't inform. We execute.", region: "Every interaction produces a decision.", latency: "Action" },
+  { city: "Built for the forgotten.", region: "Migrants, refugees, asylum seekers.", latency: "Day 1" },
+  { city: "No SA ID required", region: "Foreign nationals from day one.", latency: "Open" },
+  { city: "Every agent included", region: "All five, from the start.", latency: "All" },
+  { city: "One transferable pass", region: "Give another migrant access.", latency: "+1" },
 ];
 
 export function InfrastructureSection() {
@@ -47,31 +47,31 @@ export function InfrastructureSection() {
           >
             <span className="inline-flex items-center gap-3 text-sm font-mono text-muted-foreground mb-6">
               <span className="w-8 h-px bg-foreground/30" />
-              Infrastructure
+              Why Kommune
             </span>
             <h2 className="text-4xl lg:text-6xl font-display tracking-tight mb-8">
-              Global by
+              Administrative agency,
               <br />
-              default.
+              for everyone.
             </h2>
             <p className="text-xl text-muted-foreground leading-relaxed mb-12">
-              Deploy once, run everywhere. Our edge network spans 17 data centers 
-              across 6 continents, delivering sub-50ms latency to 99% of the world.
+              One flat activation. No SA ID required. Works for asylum seekers and 
+              foreign nationals from day one.
             </p>
 
             {/* Stats */}
             <div className="grid grid-cols-3 gap-8">
               <div>
-                <div className="text-4xl lg:text-5xl font-display mb-2">17</div>
-                <div className="text-sm text-muted-foreground">Data centers</div>
+                <div className="text-4xl lg:text-5xl font-display mb-2">R300</div>
+                <div className="text-sm text-muted-foreground">Once-off</div>
               </div>
               <div>
-                <div className="text-4xl lg:text-5xl font-display mb-2">99.99%</div>
-                <div className="text-sm text-muted-foreground">Uptime SLA</div>
+                <div className="text-4xl lg:text-5xl font-display mb-2">5</div>
+                <div className="text-sm text-muted-foreground">Specialist agents</div>
               </div>
               <div>
-                <div className="text-4xl lg:text-5xl font-display mb-2">&lt;50ms</div>
-                <div className="text-sm text-muted-foreground">Global latency</div>
+                <div className="text-4xl lg:text-5xl font-display mb-2">+1</div>
+                <div className="text-sm text-muted-foreground">Support Pass</div>
               </div>
             </div>
           </div>
@@ -85,10 +85,10 @@ export function InfrastructureSection() {
             <div className="border border-foreground/10">
               {/* Header */}
               <div className="px-6 py-4 border-b border-foreground/10 flex items-center justify-between">
-                <span className="text-sm font-mono text-muted-foreground">Edge Network</span>
+                <span className="text-sm font-mono text-muted-foreground">What you get</span>
                 <span className="flex items-center gap-2 text-xs font-mono text-green-600">
                   <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                  All operational
+                  All included
                 </span>
               </div>
 

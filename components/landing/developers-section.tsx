@@ -5,52 +5,49 @@ import { Copy, Check } from "lucide-react";
 
 const codeExamples = [
   {
-    label: "Install",
-    code: `npm install @optimus/sdk
+    label: "Vault",
+    code: `vault.read('lease-agreement')
 
-# or
-yarn add @optimus/sdk
-pnpm add @optimus/sdk`,
+// Agents pull documents
+// when executing tasks
+status: 'encrypted'`,
   },
   {
-    label: "Initialize",
-    code: `import { Optimus } from '@optimus/sdk'
-
-const optimus = new Optimus({
-  apiKey: process.env.OPTIMUS_KEY
+    label: "Execute",
+    code: `legalAgent.execute({
+  task: 'visa-renewal',
+  documents: vault.match('visa'),
+  output: 'embassy-letter'
 })`,
   },
   {
-    label: "Deploy",
-    code: `const app = await optimus.deploy({
-  name: 'my-app',
-  region: 'auto',
-  scaling: {
-    min: 1,
-    max: 100
-  }
+    label: "Audit",
+    code: `vault.write({
+  entry: 'CPA objection 14(b)',
+  source: 'legal-agent',
+  immutable: true
 })
 
-console.log('Live at:', app.url)`,
+// Proof you took the step`,
   },
 ];
 
 const features = [
   { 
-    title: "TypeScript native", 
-    description: "Full type safety with auto-generated types."
+    title: "AES-256 encrypted", 
+    description: "A permanent, secure record of every step."
   },
   { 
-    title: "Zero config", 
-    description: "Sensible defaults that just work."
+    title: "Immutable audit trail", 
+    description: "Every output written back with full history."
   },
   { 
-    title: "Edge-ready", 
-    description: "Runs anywhere: Node, Deno, Bun, browsers."
+    title: "Agents pull & write", 
+    description: "Documents used and produced automatically."
   },
   { 
-    title: "12KB gzipped", 
-    description: "Lightweight with zero dependencies."
+    title: "Proof of every action", 
+    description: "Not just information — evidence you acted."
   },
 ];
 
@@ -119,16 +116,16 @@ export function DevelopersSection() {
           >
             <span className="inline-flex items-center gap-3 text-sm font-mono text-muted-foreground mb-6">
               <span className="w-8 h-px bg-foreground/30" />
-              For developers
+              Secure vault
             </span>
             <h2 className="text-4xl lg:text-6xl font-display tracking-tight mb-8">
-              Built by devs.
+              Every action.
               <br />
-              <span className="text-muted-foreground">For devs.</span>
+              <span className="text-muted-foreground">Every proof.</span>
             </h2>
             <p className="text-xl text-muted-foreground mb-12 leading-relaxed">
-              A thoughtfully designed SDK that gets out of your way. 
-              Ship faster with intuitive APIs and exceptional documentation.
+              Your agents pull documents from the Vault when executing tasks and write 
+              every output back — with a complete, immutable audit trail.
             </p>
             
             {/* Features */}
@@ -220,11 +217,11 @@ export function DevelopersSection() {
             {/* Links */}
             <div className="mt-6 flex items-center gap-6 text-sm">
               <a href="#" className="text-foreground hover:underline underline-offset-4">
-                Read the docs
+                Explore the Vault
               </a>
               <span className="text-foreground/20">|</span>
               <a href="#" className="text-muted-foreground hover:text-foreground">
-                View on GitHub
+                How execution works
               </a>
             </div>
           </div>

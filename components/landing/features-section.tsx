@@ -5,27 +5,27 @@ import { useEffect, useRef, useState } from "react";
 const features = [
   {
     number: "01",
-    title: "Instant Deployment",
-    description: "Push to production in seconds. Our edge network ensures your applications load instantly, anywhere in the world.",
-    visual: "deploy",
+    title: "Legal agent",
+    description: "The system is complicated. We've read all of it. Handles visa issues, expired documents, asylum cases, Home Affairs, embassy letters, and statelessness.",
+    visual: "security",
   },
   {
     number: "02",
-    title: "AI-Native Workflows",
-    description: "Build intelligent applications with built-in AI capabilities. From inference to training, everything scales automatically.",
+    title: "Opportunity agent",
+    description: "Your goals exist. The path to them does too. Handles university applications, bursaries, learnerships, qualifications, and skills development.",
     visual: "ai",
   },
   {
     number: "03",
-    title: "Real-time Collaboration",
-    description: "Work together seamlessly. Live preview, instant feedback, and version control that actually makes sense.",
-    visual: "collab",
+    title: "Credit agent",
+    description: "Financial identity doesn't start at zero. It starts here. Handles bank eligibility, credit building, bureau disputes, and insurance access.",
+    visual: "deploy",
   },
   {
     number: "04",
-    title: "Enterprise Security",
-    description: "Bank-grade encryption, SOC 2 compliance, and granular access controls. Your data stays yours.",
-    visual: "security",
+    title: "Health agent",
+    description: "Healthcare is a right. We help you exercise it. Handles healthcare rights, clinic access, medical aid, and emergency guidance.",
+    visual: "collab",
   },
 ];
 
@@ -323,16 +323,16 @@ export function FeaturesSection() {
         <div className="mb-16 lg:mb-24">
           <span className="inline-flex items-center gap-3 text-sm font-mono text-muted-foreground mb-6">
             <span className="w-8 h-px bg-foreground/30" />
-            Capabilities
+            The system
           </span>
           <h2
             className={`text-4xl lg:text-6xl font-display tracking-tight transition-all duration-700 ${
               isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
             }`}
           >
-            Everything you need.
+            Five agents.
             <br />
-            <span className="text-muted-foreground">Nothing you don&apos;t.</span>
+            <span className="text-muted-foreground">One platform.</span>
           </h2>
         </div>
 

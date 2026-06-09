@@ -5,38 +5,36 @@ import { useEffect, useRef, useState } from "react";
 const steps = [
   {
     number: "I",
-    title: "Connect your tools",
-    description: "Integrate with your existing stack in minutes. We support 200+ data sources out of the box.",
-    code: `import { optimus } from '@optimus/core'
+    title: "Define your goal",
+    description: "Tell us where you want to go. Become an architect, secure an SA ID, build credit — your agents map the path.",
+    code: `goal: 'Become an architect'
 
-optimus.connect({
-  source: 'your-database',
-  sync: true
-})`,
+milestones: [
+  'Complete grade 12',
+  'Apply to university',
+  'Secure funding'
+]`,
   },
   {
     number: "II",
-    title: "Build your workflow",
-    description: "Design powerful automations with our visual builder or write code directly.",
-    code: `optimus.workflow('process', {
-  trigger: 'event',
-  actions: [
-    'validate',
-    'transform', 
-    'deliver'
-  ]
+    title: "Set your timeline",
+    description: "Your agents build the path and walk it with you, surfacing your next best move automatically.",
+    code: `journey.track({
+  'Complete degree': 'in progress',
+  'Build portfolio': 'next',
+  'Find employment': 'planned'
 })`,
   },
   {
     number: "III",
-    title: "Ship to production",
-    description: "Deploy globally with zero configuration. Your app goes live in under 30 seconds.",
-    code: `optimus.deploy({
-  target: 'production',
-  regions: 'auto'
-})
-
-// Deployed to 12 regions`,
+    title: "Track your readiness",
+    description: "See exactly where you stand across every dimension that matters — and what to do next.",
+    code: `readiness: {
+  legal: 82,
+  education: 64,
+  financial: 41,
+  admin: 90
+}`,
   },
 ];
 
@@ -88,16 +86,16 @@ export function HowItWorksSection() {
         <div className="mb-16 lg:mb-24">
           <span className="inline-flex items-center gap-3 text-sm font-mono text-background/50 mb-6">
             <span className="w-8 h-px bg-background/30" />
-            Process
+            Journey engine
           </span>
           <h2
             className={`text-4xl lg:text-6xl font-display tracking-tight transition-all duration-700 ${
               isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
             }`}
           >
-            Three steps.
+            You have a plan.
             <br />
-            <span className="text-background/50">Infinite possibilities.</span>
+            <span className="text-background/50">We make it real.</span>
           </h2>
         </div>
 
@@ -151,7 +149,7 @@ export function HowItWorksSection() {
                   <div className="w-3 h-3 rounded-full bg-background/20" />
                   <div className="w-3 h-3 rounded-full bg-background/20" />
                 </div>
-                <span className="text-xs font-mono text-background/40">workflow.ts</span>
+                <span className="text-xs font-mono text-background/40">journey.ts</span>
               </div>
 
               {/* Code content */}

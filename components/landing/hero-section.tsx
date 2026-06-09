@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { AnimatedSphere } from "./animated-sphere";
 
-const words = ["create", "build", "scale", "ship"];
+const words = ["people", "families", "you", "everyone"];
 
 export function HeroSection() {
   const [isVisible, setIsVisible] = useState(false);
@@ -64,7 +64,7 @@ export function HeroSection() {
         >
           <span className="inline-flex items-center gap-3 text-sm font-mono text-muted-foreground">
             <span className="w-8 h-px bg-foreground/30" />
-            The platform for modern teams
+            Now live in South Africa
           </span>
         </div>
         
@@ -75,9 +75,9 @@ export function HeroSection() {
               isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
             }`}
           >
-            <span className="block">The platform</span>
+            <span className="block">Technology made</span>
             <span className="block">
-              to{" "}
+              for real{" "}
               <span className="relative inline-block">
                 <span 
                   key={wordIndex}
@@ -108,8 +108,9 @@ export function HeroSection() {
               isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
             }`}
           >
-            Your toolkit to stop configuring and start innovating. 
-            Securely build, deploy, and scale the best experiences.
+            AI infrastructure that betters your life, 24/7. Five AI agents working 
+            on your legal, financial, educational, and administrative matters — so 
+            you always know your next move.
           </p>
           
           {/* CTAs */}
@@ -122,7 +123,7 @@ export function HeroSection() {
               size="lg" 
               className="bg-foreground hover:bg-foreground/90 text-background px-8 h-14 text-base rounded-full group"
             >
-              Start free trial
+              Activate for R300
               <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
             </Button>
             <Button 
@@ -130,7 +131,7 @@ export function HeroSection() {
               variant="outline" 
               className="h-14 px-8 text-base rounded-full border-foreground/20 hover:bg-foreground/5"
             >
-              Watch demo
+              Read the manifesto
             </Button>
           </div>
         </div>
@@ -147,10 +148,10 @@ export function HeroSection() {
           {[...Array(2)].map((_, i) => (
             <div key={i} className="flex gap-16">
               {[
-                { value: "20 days", label: "saved on builds", company: "NETFLIX" },
-                { value: "98%", label: "faster deployment", company: "STRIPE" },
-                { value: "300%", label: "throughput increase", company: "LINEAR" },
-                { value: "6x", label: "faster to ship", company: "NOTION" },
+                { value: "Legal stability", label: "Documents, visa status, disputes — resolved.", company: "AGENT 01" },
+                { value: "Financial readiness", label: "No credit history? We build one.", company: "AGENT 02" },
+                { value: "Education & career", label: "Your qualifications matter here.", company: "AGENT 03" },
+                { value: "Health access", label: "Healthcare is a right. Exercise it.", company: "AGENT 04" },
               ].map((stat) => (
                 <div key={`${stat.company}-${i}`} className="flex items-baseline gap-4">
                   <span className="text-4xl lg:text-5xl font-display">{stat.value}</span>

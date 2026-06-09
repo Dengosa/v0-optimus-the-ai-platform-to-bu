@@ -52,14 +52,14 @@ export function CtaSection() {
               {/* Left content */}
               <div className="flex-1">
                 <h2 className="text-4xl lg:text-7xl font-display tracking-tight mb-8 leading-[0.95]">
-                  Ready to build
+                  Ready to know
                   <br />
-                  something great?
+                  your next move?
                 </h2>
 
                 <p className="text-xl text-muted-foreground mb-12 leading-relaxed max-w-xl">
-                  Join thousands of teams shipping faster with Optimus. 
-                  Start free, scale infinitely.
+                  Activate Kommune for R300. Your five agents go to work on your behalf, 
+                  24/7 — and one transferable Support Pass changes another life too.
                 </p>
 
                 <div className="flex flex-col sm:flex-row items-start gap-4">
@@ -67,7 +67,7 @@ export function CtaSection() {
                     size="lg"
                     className="bg-foreground hover:bg-foreground/90 text-background px-8 h-14 text-base rounded-full group"
                   >
-                    Start building free
+                    Activate for R300
                     <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
                   </Button>
                   <Button
@@ -75,12 +75,12 @@ export function CtaSection() {
                     variant="outline"
                     className="h-14 px-8 text-base rounded-full border-foreground/20 hover:bg-foreground/5"
                   >
-                    Talk to sales
+                    Read the manifesto
                   </Button>
                 </div>
 
                 <p className="text-sm text-muted-foreground mt-8 font-mono">
-                  No credit card required
+                  No SA ID required
                 </p>
               </div>
 

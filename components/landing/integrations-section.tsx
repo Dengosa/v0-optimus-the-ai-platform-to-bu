@@ -3,18 +3,18 @@
 import { useEffect, useState, useRef } from "react";
 
 const integrations = [
-  { name: "GitHub", category: "Version Control" },
-  { name: "Slack", category: "Communication" },
-  { name: "Stripe", category: "Payments" },
-  { name: "PostgreSQL", category: "Database" },
-  { name: "Redis", category: "Cache" },
-  { name: "AWS", category: "Cloud" },
-  { name: "MongoDB", category: "Database" },
-  { name: "Vercel", category: "Hosting" },
-  { name: "Figma", category: "Design" },
-  { name: "Linear", category: "Project Management" },
-  { name: "Notion", category: "Documentation" },
-  { name: "OpenAI", category: "AI/ML" },
+  { name: "Visa issues", category: "Legal agent" },
+  { name: "Expired documents", category: "Legal agent" },
+  { name: "Asylum cases", category: "Legal agent" },
+  { name: "Home Affairs", category: "Legal agent" },
+  { name: "University applications", category: "Opportunity agent" },
+  { name: "Bursaries", category: "Opportunity agent" },
+  { name: "Learnerships", category: "Opportunity agent" },
+  { name: "Bank eligibility", category: "Credit agent" },
+  { name: "Credit building", category: "Credit agent" },
+  { name: "Bureau disputes", category: "Credit agent" },
+  { name: "Healthcare rights", category: "Health agent" },
+  { name: "Clinic access", category: "Health agent" },
 ];
 
 export function IntegrationsSection() {
@@ -44,16 +44,16 @@ export function IntegrationsSection() {
         >
           <span className="inline-flex items-center gap-3 text-sm font-mono text-muted-foreground mb-6">
             <span className="w-8 h-px bg-foreground/30" />
-            Integrations
+            What we handle
             <span className="w-8 h-px bg-foreground/30" />
           </span>
           <h2 className="text-4xl lg:text-6xl font-display tracking-tight mb-6">
-            Works with everything
+            Each agent specialises.
             <br />
-            you already use.
+            All agents collaborate.
           </h2>
           <p className="text-xl text-muted-foreground">
-            200+ pre-built integrations. Connect your entire stack in minutes.
+            From visa renewals to credit disputes — your agents execute, never just inform.
           </p>
         </div>
 

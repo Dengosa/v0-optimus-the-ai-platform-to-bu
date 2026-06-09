@@ -5,50 +5,50 @@ import { ArrowRight, Check } from "lucide-react";
 
 const plans = [
   {
-    name: "Starter",
-    description: "For individuals and small projects",
-    price: { monthly: 0, annual: 0 },
+    name: "Sign up",
+    description: "Activate your account in minutes",
+    price: { monthly: 300, annual: 300 },
     features: [
-      "Up to 3 projects",
-      "1GB storage",
-      "Community support",
-      "Basic analytics",
-      "SSL certificates",
+      "No SA ID required",
+      "Open to foreign nationals",
+      "Asylum seekers welcome",
+      "Citizens & residents too",
+      "Once-off activation",
     ],
-    cta: "Start free",
+    cta: "Activate now",
     popular: false,
   },
   {
-    name: "Pro",
-    description: "For growing teams and businesses",
-    price: { monthly: 29, annual: 24 },
+    name: "Upload to Vault",
+    description: "Add documents to your encrypted Vault",
+    price: { monthly: 300, annual: 300 },
     features: [
-      "Unlimited projects",
-      "100GB storage",
-      "Priority support",
-      "Advanced analytics",
-      "Custom domains",
-      "Team collaboration",
-      "API access",
+      "All five agents included",
+      "AES-256 encryption",
+      "Immutable audit trail",
+      "Agents pull from your Vault",
+      "Every output written back",
+      "Proof of every action",
+      "One transferable Support Pass",
     ],
-    cta: "Start trial",
+    cta: "Activate now",
     popular: true,
   },
   {
-    name: "Enterprise",
-    description: "For large-scale operations",
-    price: { monthly: null, annual: null },
+    name: "Agents activate",
+    description: "Your agents start working, 24/7",
+    price: { monthly: 300, annual: 300 },
     features: [
-      "Everything in Pro",
-      "Unlimited storage",
-      "24/7 dedicated support",
-      "Custom integrations",
-      "SLA guarantee",
-      "On-premise option",
-      "Security audit",
-      "Custom contracts",
+      "Legal agent",
+      "Opportunity agent",
+      "Credit agent",
+      "Health agent",
+      "Journey engine",
+      "Always working for you",
+      "No subscription, ever",
+      "No hidden charges",
     ],
-    cta: "Contact sales",
+    cta: "Activate now",
     popular: false,
   },
 ];
@@ -62,15 +62,16 @@ export function PricingSection() {
         {/* Header */}
         <div className="max-w-3xl mb-20">
           <span className="font-mono text-xs tracking-widest text-muted-foreground uppercase block mb-6">
-            Pricing
+            Support pass
           </span>
           <h2 className="font-display text-5xl md:text-6xl lg:text-7xl tracking-tight text-foreground mb-6">
-            Simple, transparent
+            One activation.
             <br />
-            <span className="text-stroke">pricing</span>
+            <span className="text-stroke">Two lives changed.</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-xl">
-            Start free and scale as you grow. No hidden fees, no surprises.
+            Every R300 activation includes one transferable Support Pass — give 
+            another migrant full access at no extra cost.
           </p>
         </div>
 
@@ -81,7 +82,7 @@ export function PricingSection() {
               !isAnnual ? "text-foreground" : "text-muted-foreground"
             }`}
           >
-            Monthly
+            Once-off
           </span>
           <button
             onClick={() => setIsAnnual(!isAnnual)}
@@ -98,11 +99,11 @@ export function PricingSection() {
               isAnnual ? "text-foreground" : "text-muted-foreground"
             }`}
           >
-            Annual
+            With Support Pass
           </span>
           {isAnnual && (
             <span className="ml-2 px-2 py-1 bg-foreground text-primary-foreground text-xs font-mono">
-              Save 17%
+              Two lives changed
             </span>
           )}
         </div>
@@ -118,7 +119,7 @@ export function PricingSection() {
             >
               {plan.popular && (
                 <span className="absolute -top-3 left-8 px-3 py-1 bg-foreground text-primary-foreground text-xs font-mono uppercase tracking-widest">
-                  Most Popular
+                  All agents included
                 </span>
               )}
 
@@ -136,9 +137,9 @@ export function PricingSection() {
                 {plan.price.monthly !== null ? (
                   <div className="flex items-baseline gap-2">
                     <span className="font-display text-5xl lg:text-6xl text-foreground">
-                      ${isAnnual ? plan.price.annual : plan.price.monthly}
+                      R{isAnnual ? plan.price.annual : plan.price.monthly}
                     </span>
-                    <span className="text-muted-foreground">/month</span>
+                    <span className="text-muted-foreground">once-off</span>
                   </div>
                 ) : (
                   <span className="font-display text-4xl text-foreground">Custom</span>
@@ -172,9 +173,9 @@ export function PricingSection() {
 
         {/* Bottom Note */}
         <p className="mt-12 text-center text-sm text-muted-foreground">
-          All plans include automatic updates, HTTPS, and DDoS protection.{" "}
+          Includes one Support Pass — transferable to any migrant who needs access.{" "}
           <a href="#" className="underline underline-offset-4 hover:text-foreground transition-colors">
-            Compare all features
+            Learn how it works
           </a>
         </p>
       </div>

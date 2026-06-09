@@ -21,8 +21,8 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Optimus - Platform to Create',
-  description: 'The creative platform for teams who ship. Build, deploy, and scale with unprecedented velocity.',
+  title: 'Kommune - Technology made for real people',
+  description: 'AI infrastructure that betters your life, 24/7. Five AI agents working on your legal, financial, educational, and administrative matters.',
   generator: 'v0.app',
 }
 

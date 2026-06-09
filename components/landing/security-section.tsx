@@ -5,28 +5,28 @@ import { Shield, Lock, Eye, FileCheck } from "lucide-react";
 
 const securityFeatures = [
   {
-    icon: Shield,
-    title: "SOC 2 Type II",
-    description: "Independently audited security controls with continuous monitoring.",
+    icon: FileCheck,
+    title: "Experian dispute letter — entry 4421",
+    description: "Credit agent",
   },
   {
-    icon: Lock,
-    title: "End-to-end encryption",
-    description: "AES-256 encryption for data at rest and TLS 1.3 in transit.",
+    icon: Shield,
+    title: "Lease agreement — 14 Morningside Rd",
+    description: "Legal agent",
   },
   {
     icon: Eye,
-    title: "Zero-trust architecture",
-    description: "Every request is authenticated and authorized. No exceptions.",
+    title: "CPA objection letter — clause 14(b)",
+    description: "Legal agent",
   },
   {
-    icon: FileCheck,
-    title: "GDPR & HIPAA",
-    description: "Full compliance with data protection and healthcare regulations.",
+    icon: Lock,
+    title: "Discovery Health claim — #DH-44821",
+    description: "Health agent",
   },
 ];
 
-const certifications = ["SOC 2", "ISO 27001", "HIPAA", "GDPR", "CCPA"];
+const certifications = ["AES-256 encrypted", "Immutable audit trail", "Encrypted at rest", "Your data, yours"];
 
 export function SecuritySection() {
   const [isVisible, setIsVisible] = useState(false);
@@ -56,16 +56,16 @@ export function SecuritySection() {
           >
             <span className="inline-flex items-center gap-3 text-sm font-mono text-muted-foreground mb-6">
               <span className="w-8 h-px bg-foreground/30" />
-              Security
+              Secure vault
             </span>
             <h2 className="text-4xl lg:text-6xl font-display tracking-tight mb-8">
-              Trust is
+              Every document.
               <br />
-              non-negotiable.
+              Every proof.
             </h2>
             <p className="text-xl text-muted-foreground leading-relaxed mb-12">
-              Enterprise-grade security isn&apos;t optional. It&apos;s built into every layer 
-              of our platform, from infrastructure to application.
+              Not a folder. Not a form. A permanent encrypted record of every step 
+              you&apos;ve taken — and proof that you took it.
             </p>
 
             {/* Certifications */}

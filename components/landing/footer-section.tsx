@@ -4,35 +4,30 @@ import { ArrowUpRight } from "lucide-react";
 import { AnimatedWave } from "./animated-wave";
 
 const footerLinks = {
-  Product: [
-    { name: "Features", href: "#features" },
-    { name: "How it works", href: "#how-it-works" },
-    { name: "Pricing", href: "#pricing" },
-    { name: "Integrations", href: "#integrations" },
-  ],
-  Developers: [
-    { name: "Documentation", href: "#developers" },
-    { name: "API Reference", href: "#" },
-    { name: "SDK", href: "#developers" },
-    { name: "Status", href: "#" },
-  ],
-  Company: [
-    { name: "About", href: "#" },
-    { name: "Blog", href: "#" },
+  "The good": [
+    { name: "Home", href: "#" },
+    { name: "Manifesto", href: "#features" },
+    { name: "Research", href: "#how-it-works" },
     { name: "Careers", href: "#", badge: "Hiring" },
-    { name: "Contact", href: "#" },
   ],
-  Legal: [
-    { name: "Privacy", href: "#" },
+  "The boring": [
     { name: "Terms", href: "#" },
-    { name: "Security", href: "#security" },
+    { name: "Privacy", href: "#" },
+    { name: "Press", href: "#" },
+    { name: "Compliance", href: "#security" },
+  ],
+  "The bold": [
+    { name: "X", href: "#" },
+    { name: "Instagram", href: "#" },
+    { name: "WhatsApp", href: "#" },
+    { name: "Community", href: "#" },
   ],
 };
 
 const socialLinks = [
-  { name: "Twitter", href: "#" },
-  { name: "GitHub", href: "#" },
-  { name: "LinkedIn", href: "#" },
+  { name: "X", href: "#" },
+  { name: "Instagram", href: "#" },
+  { name: "WhatsApp", href: "#" },
 ];
 
 export function FooterSection() {
@@ -50,12 +45,12 @@ export function FooterSection() {
             {/* Brand Column */}
             <div className="col-span-2">
               <a href="#" className="inline-flex items-center gap-2 mb-6">
-                <span className="text-2xl font-display">Optimus</span>
+                <span className="text-2xl font-display">Kommune</span>
                 <span className="text-xs text-muted-foreground font-mono">TM</span>
               </a>
 
               <p className="text-muted-foreground leading-relaxed mb-8 max-w-xs">
-                The platform for teams who ship. Build, deploy, and scale with unprecedented velocity.
+                Technology made for real people. AI infrastructure that betters your life, 24/7.
               </p>
 
               {/* Social Links */}
@@ -102,13 +97,13 @@ export function FooterSection() {
         {/* Bottom Bar */}
         <div className="py-8 border-t border-foreground/10 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-sm text-muted-foreground">
-            2025 Optimus. All rights reserved.
+            2026 Kommune. All rights reserved.
           </p>
 
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <span className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-green-500" />
-              All systems operational
+              Your agents are active
             </span>
           </div>
         </div>
