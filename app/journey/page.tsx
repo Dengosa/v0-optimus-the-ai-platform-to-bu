@@ -1,0 +1,132 @@
+"use client";
+
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { ArrowRight, BarChart3, FolderCheck, ShieldCheck, GraduationCap, HeartPulse, Wallet } from "lucide-react";
+
+const agents = [
+  { icon: ShieldCheck, label: "Legal readiness", value: "Ready" },
+  { icon: GraduationCap, label: "Education readiness", value: "Ready" },
+  { icon: HeartPulse, label: "Health readiness", value: "Ready" },
+  { icon: Wallet, label: "Credit readiness", value: "Ready" },
+];
+
+export default function JourneyPage() {
+  return (
+    <main className="relative min-h-screen bg-secondary/20">
+      <div className="max-w-[1100px] mx-auto px-6 lg:px-12 pt-28 pb-20">
+        <div className="flex items-start justify-between gap-8">
+          <div>
+            <div className="font-mono text-xs tracking-widest text-muted-foreground uppercase">Your workspace</div>
+            <h1 className="mt-4 text-4xl lg:text-6xl font-display tracking-tight">Your Journey</h1>
+            <p className="mt-4 text-xl text-muted-foreground max-w-2xl">
+              Technology Made For Real People. Your agents are working in the background so you can move forward.
+            </p>
+          </div>
+
+          <div className="hidden sm:flex items-center gap-3">
+            <Button asChild variant="outline" className="rounded-full">
+              <Link href="#demo">
+                Back to demo
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+
+        <div className="mt-10 grid lg:grid-cols-2 gap-6">
+          <section className="rounded-2xl border border-foreground/10 bg-background p-6 lg:p-8">
+            <div className="flex items-center gap-3">
+              <BarChart3 className="w-5 h-5 text-foreground" />
+              <h2 className="text-xl font-display">Journey progress</h2>
+            </div>
+
+            <div className="mt-6 grid sm:grid-cols-2 gap-4">
+              {agents.map((a) => {
+                const Icon = a.icon;
+                return (
+                  <div key={a.label} className="rounded-xl border border-foreground/10 bg-secondary/30 p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="inline-flex items-center gap-3">
+                        <span className="w-10 h-10 rounded-xl bg-foreground/5 inline-flex items-center justify-center">
+                          <Icon className="w-5 h-5" />
+                        </span>
+                        <div>
+                          <div className="text-sm font-medium">{a.label}</div>
+                          <div className="font-mono text-xs text-muted-foreground">Status</div>
+                        </div>
+                      </div>
+                      <span className="font-mono text-xs px-3 py-1 rounded-full bg-green-500/10 text-green-600 border border-green-500/20">
+                        {a.value}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="mt-6 rounded-xl border border-foreground/10 p-4 bg-background">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <div className="text-sm font-medium">Next move</div>
+                  <div className="mt-1 text-sm text-muted-foreground">
+                    Based on your situation, your Legal and Opportunity agents prepare a clear checklist and your next steps.
+                  </div>
+                </div>
+                <FolderCheck className="w-6 h-6 text-foreground/80" />
+              </div>
+            </div>
+          </section>
+
+          <section className="rounded-2xl border border-foreground/10 bg-background p-6 lg:p-8">
+            <div className="flex items-center gap-3">
+              <ShieldCheck className="w-5 h-5 text-foreground" />
+              <h2 className="text-xl font-display">What your vault contains</h2>
+            </div>
+
+            <div className="mt-6 space-y-4">
+              {[
+                "WhatsApp onboarding record",
+                "Welcome email receipt",
+                "Journey setup instructions",
+                "Agent action plan draft",
+              ].map((item) => (
+                <div key={item} className="flex items-center gap-3">
+                  <span className="w-8 h-8 rounded-xl bg-foreground/5 inline-flex items-center justify-center">
+                    <span className="w-2 h-2 rounded-full bg-foreground" />
+                  </span>
+                  <div>
+                    <div className="text-sm font-medium">{item}</div>
+                    <div className="text-xs text-muted-foreground font-mono">Stored with proof</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-8">
+              <Button asChild className="w-full bg-foreground hover:bg-foreground/90 text-background rounded-full">
+                <Link href="#">
+                  Review next steps
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Link>
+              </Button>
+              <p className="mt-3 text-sm text-muted-foreground">
+                This is a demo dashboard page. In a live workspace, you would see your actual documents and scheduled tasks here.
+              </p>
+            </div>
+          </section>
+        </div>
+
+        <div className="mt-8 sm:hidden">
+          <Button asChild variant="outline" className="w-full rounded-full">
+            <Link href="#demo">
+              Back to demo
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Link>
+          </Button>
+        </div>
+      </div>
+    </main>
+  );
+}
+
