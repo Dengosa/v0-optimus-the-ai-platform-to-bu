@@ -1,13 +1,7 @@
-- [x] Insert AgentDemoSection directly below HeroSection in app/page.tsx
+- [ ] Inspect existing lib/api.ts SSE helper patterns
+- [ ] Define KommuneState TypeScript types and SSE generator utility in lib/api.ts
+- [ ] Implement async generator that POSTs payload to NEXT_PUBLIC_API_URL/stream and yields KommuneState objects from SSE JSON chunks
+- [ ] Add safe SSE parsing (handles partial lines/frames), network-drop error handling, and explicit CORS-related headers
+- [ ] Ensure exports don’t break existing imports
+- [ ] Run typecheck/build (if feasible) to confirm no TS errors
 
-- [x] Add Brand-first Trust section placement: add/update section between Agent Demo and Pricing
-
-- [ ] Upgrade components/landing/agent-demo-section.tsx to match required demo spec (scenario CTAs inside results, agent panel statuses per scenario, progress indicator, scenario clicks)
-
-
-
-- [x] Add /activate route (app/activate/page.tsx) with activation pricing card + Activate Access button (no popups)
-- [x] Add /welcome route (app/welcome/page.tsx) with onboarding steps (WhatsApp/email statuses + scheduling)
-- [x] Add /journey route (app/journey/page.tsx) as post-onboarding workspace entry
-
-- [ ] Run typecheck/build to ensure routes compile

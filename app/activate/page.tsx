@@ -1,9 +1,27 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Check, Shield, Mail, MessageCircle, Sms, Vault } from "lucide-react";
+import {
+  ArrowRight,
+  Check,
+  Mail,
+  MessageCircle,
+  MessageSquare,
+  QrCode,
+  Shield,
+  Vault,
+} from "lucide-react";
+
+import { getActivationStatus, requestActivation } from "@/lib/api";
+
+import ActivateBox from "./ActivateBox";
+
+// NOTE: this page expects an `activated` flag for the legacy CTA.
+// The previous build failed because `activated` was not defined.
+const activated = false;
 
 const included = [
   { icon: Shield, label: "Legal Agent" },
@@ -14,13 +32,40 @@ const included = [
   { icon: Vault, label: "Vault" },
   { icon: Mail, label: "Email Support" },
   { icon: MessageCircle, label: "WhatsApp Support" },
-  { icon: Sms, label: "SMS Support" },
+  { icon: MessageSquare, label: "SMS Support" },
   { icon: Shield, label: "One Support Pass" },
 ];
 
+type ActivationPayload = {
+  reference?: string;
+  qr_code_url?: string;
+  instructions?: string;
+};
+
 export default function ActivatePage() {
   const [isProcessing, setIsProcessing] = useState(false);
-  const [activated, setActivated] = useState(false);
+  const [activationRef, setActivationRef] = useState<string | null>(null);
+  const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
+  const [instructions, setInstructions] = useState<string | null>(null);
+  const [status, setStatus] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const [step, setStep] = useState<"form" | "pending" | "confirmed">("form");
+  const [email, setEmail] = useState("");
+  const [whatsappNumber, setWhatsappNumber] = useState("");
+
+  const pollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const clearPoll = () => {
+    if (pollTimer.current) {
+      clearInterval(pollTimer.current);
+      pollTimer.current = null;
+    }
+  };
+
+  useEffect(() => {
+    return () => clearPoll();
+  }, []);
 
   const priceCard = useMemo(
     () => (
@@ -64,8 +109,7 @@ export default function ActivatePage() {
             <Link
               href="/welcome"
               onClick={() => {
-                setIsProcessing(true);
-                setActivated(true);
+                // keep legacy CTA styling but do not trigger activation here
               }}
             >
               {activated ? "Activating..." : "Activate Access"}
@@ -95,9 +139,67 @@ export default function ActivatePage() {
 
         {priceCard}
 
-        <div className="mt-10 text-sm text-muted-foreground">
-          By continuing, you agree to the demo onboarding flow. You can open the success pages anytime.
-        </div>
+        <ActivateBox
+          isProcessing={isProcessing}
+          step={step}
+          error={error}
+          activationRef={activationRef}
+          qrCodeUrl={qrCodeUrl}
+          instructions={instructions}
+          status={status}
+          email={email}
+          whatsappNumber={whatsappNumber}
+          setEmail={setEmail}
+          setWhatsappNumber={setWhatsappNumber}
+          onSubmit={async () => {
+            setError(null);
+            setIsProcessing(true);
+            try {
+              const resp = await requestActivation({
+                email: email.trim() ? email.trim() : undefined,
+                whatsapp_number: whatsappNumber.trim() ? whatsappNumber.trim() : undefined,
+              });
+
+              const ref = resp?.reference ?? null;
+              setActivationRef(ref);
+              setQrCodeUrl(resp?.qr_code_url ?? null);
+              setInstructions(resp?.instructions ?? null);
+              setStatus("pending");
+              setStep("pending");
+
+              clearPoll();
+              pollTimer.current = setInterval(async () => {
+                if (!ref) return;
+                try {
+                  const st = await getActivationStatus(ref);
+                  const s = st?.status ?? null;
+                  setStatus(s);
+                  if (s === "confirmed") {
+                    clearPoll();
+                    setStep("confirmed");
+                    setIsProcessing(false);
+                  }
+                } catch {
+                  // keep polling
+                }
+              }, 10_000);
+            } catch (e: any) {
+              setError(e?.message ?? "Failed to activate. Please try again.");
+              setIsProcessing(false);
+            }
+          }}
+          onReset={() => {
+            clearPoll();
+            setStep("form");
+            setActivationRef(null);
+            setQrCodeUrl(null);
+            setInstructions(null);
+            setStatus(null);
+            setError(null);
+            setIsProcessing(false);
+          }}
+        />
+
       </div>
     </main>
   );

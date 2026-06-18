@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, CalendarDays, Mail, MessageCircle, Sms } from "lucide-react";
+import { ArrowRight, CalendarDays, Mail, MessageCircle, PhoneCall } from "lucide-react";
+
 
 type StepKey = "whatsapp" | "email" | "call";
 
@@ -84,7 +85,8 @@ export default function WelcomePage() {
                 isActive={step === "email"}
               />
               <div className={`rounded-xl border border-foreground/10 p-4 ${step === "call" ? "bg-secondary/40" : "bg-background"}`}>
-                <StepHeader icon={Sms} title="Schedule Onboarding Call" />
+                <StepHeader icon={PhoneCall} title="Schedule Onboarding Call" />
+
 
                 {step !== "call" ? (
                   <div className="mt-3 text-sm text-muted-foreground">Select a time after WhatsApp and email are sent.</div>

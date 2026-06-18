@@ -1,0 +1,281 @@
+/*
+ * Frontend API client for the FastAPI backend.
+ * Uses NEXT_PUBLIC_API_URL and defaults to local dev.
+ */
+
+export const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+
+export type StreamHandlers = {
+  onRouting?: (payload: any) => void;
+  onEmergency?: (payload: any) => void;
+  onDelta?: (payload: { delta?: string; message?: string }) => void;
+  onDone?: (payload: any) => void;
+  onError?: (err: any) => void;
+};
+
+// Kommune streaming types used by streamKommuneChat.
+export type KommuneState = Record<string, any>;
+export type StreamChatPayload = {
+  message: string;
+  history: Array<{ role: string; content: string }>;
+  user_id?: string;
+  session_id?: string;
+  [k: string]: any;
+};
+
+
+export async function joinWaitlist(payload: {
+  email: string;
+  name?: string;
+  city?: string;
+  source?: string;
+}) {
+  const res = await fetch(`${API_URL}/waitlist`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`joinWaitlist failed: ${res.status} ${text}`);
+  }
+
+  return res.json().catch(() => ({}));
+}
+
+export async function getWaitlistCount(): Promise<number> {
+  const res = await fetch(`${API_URL}/waitlist/count`, {
+    method: "GET",
+    headers: {
+      "Accept": "application/json",
+    },
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`getWaitlistCount failed: ${res.status} ${text}`);
+  }
+
+  // Backend might return either a raw number or {count:number}
+  const data = await res.json().catch(() => null);
+  if (typeof data === "number") return data;
+  if (data && typeof data.count === "number") return data.count;
+  throw new Error("getWaitlistCount: unexpected response shape");
+}
+
+function safeParseJson(line: string) {
+  try {
+    return JSON.parse(line);
+  } catch {
+    return null;
+  }
+}
+
+function parseSseEventData(raw: string) {
+  // FastAPI may send either plain text or JSON frames.
+  // We try JSON first.
+  const parsed = safeParseJson(raw);
+  if (parsed !== null) return parsed;
+
+  return { message: raw };
+}
+
+export async function* streamKommuneChat(
+  payload: StreamChatPayload,
+  signal?: AbortSignal
+): AsyncGenerator<KommuneState, void, unknown> {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
+  const response = await fetch(`${apiUrl}/stream`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "text/event-stream",
+    },
+    body: JSON.stringify(payload),
+    signal,
+  });
+
+  if (!response.ok) {
+    throw new Error(`Server connection failed with status: ${response.status}`);
+  }
+  if (!response.body) {
+    throw new Error("ReadableStream not supported by the browser.");
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder("utf-8");
+  let buffer = "";
+  let accumulatedState: KommuneState = {};
+  let receivedDone = false;
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const parts = buffer.split("\n\n");
+      buffer = parts.pop() || "";
+
+      for (const part of parts) {
+        const trimmedPart = part.trim();
+        if (!trimmedPart.startsWith("data: ")) continue;
+        const jsonString = trimmedPart.replace(/^data:\s*/, "");
+
+        if (jsonString === "[DONE]") {
+          receivedDone = true;
+          return;
+        }
+
+        try {
+          const parsedState: KommuneState = JSON.parse(jsonString);
+          accumulatedState = { ...accumulatedState, ...parsedState };
+          yield accumulatedState;
+        } catch (parseError) {
+          // eslint-disable-next-line no-console
+          console.error("Failed to parse SSE JSON chunk:", jsonString, parseError);
+        }
+      }
+    }
+
+    if (!receivedDone) {
+      throw new Error("Stream ended unexpectedly without [DONE] signal");
+    }
+  } finally {
+    reader.releaseLock();
+  }
+}
+
+export async function streamChat(
+
+  message: string,
+  history: any[],
+  handlers: StreamHandlers,
+  userId?: string,
+  sessionId?: string,
+) {
+  const body = {
+    message,
+    history,
+    user_id: userId,
+    session_id: sessionId,
+  };
+
+  const res = await fetch(`${API_URL}/chat/stream`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Accept": "text/event-stream",
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok || !res.body) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`streamChat failed: ${res.status} ${text}`);
+  }
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder("utf-8");
+  let buffer = "";
+
+  const dispatchEvent = (eventName: string | null, dataStr: string) => {
+    const payload = parseSseEventData(dataStr);
+    if (eventName === "routing") handlers.onRouting?.(payload);
+    else if (eventName === "emergency") handlers.onEmergency?.(payload);
+    else if (eventName === "message") {
+      // Spec says "event: message" frames and handlers.onDelta expects {delta}
+      const delta =
+        typeof payload?.delta === "string"
+          ? payload.delta
+          : typeof payload?.message === "string"
+            ? payload.message
+            : typeof payload === "string"
+              ? payload
+              : payload?.message;
+
+      if (typeof delta === "string") handlers.onDelta?.({ delta });
+      else handlers.onDelta?.(payload);
+    } else if (eventName === "done") handlers.onDone?.(payload);
+  };
+
+  let currentEvent: string | null = null;
+  let currentData = "";
+
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+
+    // Process complete SSE blocks separated by double newline
+    let idx: number;
+    while ((idx = buffer.indexOf("\n\n")) !== -1) {
+      const block = buffer.slice(0, idx);
+      buffer = buffer.slice(idx + 2);
+
+      const lines = block.split(/\r?\n/);
+      for (const line of lines) {
+        if (line.startsWith("event:")) {
+          currentEvent = line.slice("event:".length).trim();
+        } else if (line.startsWith("data:")) {
+          const dataPart = line.slice("data:".length).trim();
+          // Some SSE implementations send multiple data lines; we join them.
+          currentData += (currentData ? "\n" : "") + dataPart;
+        } else if (line.trim() === "") {
+          // ignore
+        }
+      }
+
+      if (currentEvent && currentData) {
+        dispatchEvent(currentEvent, currentData);
+      }
+
+      currentEvent = null;
+      currentData = "";
+    }
+  }
+}
+
+export async function requestActivation(payload: {
+  email?: string;
+  whatsapp_number?: string;
+}) {
+  const res = await fetch(`${API_URL}/activate/request`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Accept": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`requestActivation failed: ${res.status} ${text}`);
+  }
+
+  return res.json();
+}
+
+export async function getActivationStatus(reference: string) {
+  const res = await fetch(`${API_URL}/activate/status/${reference}`, {
+    method: "GET",
+    headers: {
+      "Accept": "application/json",
+    },
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`getActivationStatus failed: ${res.status} ${text}`);
+  }
+
+  return res.json();
+}
+

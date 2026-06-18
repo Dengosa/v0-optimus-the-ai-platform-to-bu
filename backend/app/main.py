@@ -23,10 +23,16 @@ def create_app() -> FastAPI:
     async def health() -> dict:
         return {"ok": True, "service": "kommune-backend"}
 
+    # Vault / document endpoints
+    from app.api.v1.router import api_router
+
+    app.include_router(api_router, prefix="/api/v1")
+
     # Optional: execute the (skeleton) agent graph.
     # This endpoint is primarily for integration testing while we flesh out
     # LangGraph + Vault + strict Pydantic IO models.
     @app.post("/agents/run")
+
     async def agents_run(payload: dict) -> dict:
         # NOTE: We keep validation minimal for now; the next step will
         # introduce Pydantic v2 schemas and DI for auth + Vault.
