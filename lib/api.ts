@@ -1,96 +1,152 @@
 /*
- * Frontend API client for the FastAPI backend.
- * Uses NEXT_PUBLIC_API_URL and defaults to local dev.
+ * Kommune API client.
+ * Talks to the FastAPI backend (see backend/app/api/v1/endpoints/*.py).
  */
 
-export const API_URL =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-export type StreamHandlers = {
-  onRouting?: (payload: any) => void;
-  onEmergency?: (payload: any) => void;
-  onDelta?: (payload: { delta?: string; message?: string }) => void;
-  onDone?: (payload: any) => void;
-  onError?: (err: any) => void;
-};
-
-// Kommune streaming types used by streamKommuneChat.
-export type KommuneState = Record<string, any>;
-export type StreamChatPayload = {
-  message: string;
-  history: Array<{ role: string; content: string }>;
-  user_id?: string;
-  session_id?: string;
-  [k: string]: any;
-};
-
-
-export async function joinWaitlist(payload: {
+// ---------------------------------------------------------------------------
+// Waitlist
+// ---------------------------------------------------------------------------
+export interface WaitlistPayload {
   email: string;
   name?: string;
   city?: string;
   source?: string;
-}) {
-  const res = await fetch(`${API_URL}/waitlist`, {
+}
+
+export async function joinWaitlist(payload: WaitlistPayload) {
+  const res = await fetch(`${API_URL}/api/v1/waitlist`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
-
   if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`joinWaitlist failed: ${res.status} ${text}`);
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Failed to join waitlist");
   }
-
-  return res.json().catch(() => ({}));
+  return res.json();
 }
 
 export async function getWaitlistCount(): Promise<number> {
-  const res = await fetch(`${API_URL}/waitlist/count`, {
-    method: "GET",
-    headers: {
-      "Accept": "application/json",
-    },
-  });
-
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`getWaitlistCount failed: ${res.status} ${text}`);
-  }
-
-  // Backend might return either a raw number or {count:number}
-  const data = await res.json().catch(() => null);
-  if (typeof data === "number") return data;
-  if (data && typeof data.count === "number") return data.count;
-  throw new Error("getWaitlistCount: unexpected response shape");
-}
-
-function safeParseJson(line: string) {
   try {
-    return JSON.parse(line);
+    const res = await fetch(`${API_URL}/api/v1/waitlist/count`);
+    if (!res.ok) return 0;
+    const data = await res.json();
+    return data.count ?? 0;
   } catch {
-    return null;
+    return 0;
   }
 }
 
-function parseSseEventData(raw: string) {
-  // FastAPI may send either plain text or JSON frames.
-  // We try JSON first.
-  const parsed = safeParseJson(raw);
-  if (parsed !== null) return parsed;
-
-  return { message: raw };
+// ---------------------------------------------------------------------------
+// Activation
+// ---------------------------------------------------------------------------
+export interface ActivationRequestResponse {
+  reference: string;
+  amount_zar: number;
+  qr_code_url: string;
+  instructions: string;
 }
 
+export async function requestActivation(payload: {
+  email?: string;
+  whatsapp_number?: string;
+}): Promise<ActivationRequestResponse> {
+  const res = await fetch(`${API_URL}/activate/request`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || "Failed to request activation");
+  }
+  return res.json();
+}
+
+export async function getActivationStatus(
+  reference: string
+): Promise<{ status: string }> {
+  const res = await fetch(`${API_URL}/activate/status/${reference}`);
+  if (!res.ok) return { status: "not_found" };
+  return res.json();
+}
+
+// ---------------------------------------------------------------------------
+// Chat streaming
+// ---------------------------------------------------------------------------
+export interface ChatHistoryMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
+export interface StreamChatPayload {
+  message: string;
+  history: ChatHistoryMessage[];
+  user_id?: string;
+  session_id?: string;
+}
+
+/**
+ * Shape yielded by streamKommuneChat() for each SSE event received.
+ * use-chat.ts reads `delta` (text chunks to append) and `preview_mode`
+ * (and other routing/emergency fields) off this object as each event
+ * arrives.
+ */
+export interface KommuneState {
+  // From "routing" events
+  agent?: string | null;
+  agents_involved?: string[];
+  escalate_ngo?: boolean;
+  ngo?: string | null;
+  priority_flagged?: boolean;
+  priority_reason?: string | null;
+  preview_mode?: boolean;
+
+  // From "message" events
+  delta?: string;
+
+  // From "emergency" events
+  event_id?: string;
+  reason?: string;
+  checklist?: {
+    title: string;
+    items: string[];
+    ngo: string | null;
+  } | null;
+
+  // Internal: which SSE event this update came from
+  _event?: "routing" | "message" | "emergency" | "done";
+}
+
+/**
+ * Streams a chat response from POST /chat/stream as an async generator.
+ *
+ * The backend sends SSE frames shaped like:
+ *
+ *   event: routing
+ *   data: {"agent": "...", "escalate_ngo": false, ...}
+ *
+ *   event: message
+ *   data: {"delta": "some text"}
+ *
+ *   event: emergency
+ *   data: {"event_id": "...", "reason": "...", "checklist": {...}, "ngo": "..."}
+ *
+ *   event: done
+ *   data: {}
+ *
+ * Each frame is separated by a blank line. This generator parses each
+ * frame's "event:" name and "data:" JSON payload, and yields a
+ * KommuneState object per event so callers (use-chat.ts) can read
+ * `delta`, `preview_mode`, etc. directly off each yielded value.
+ */
 export async function* streamKommuneChat(
   payload: StreamChatPayload,
   signal?: AbortSignal
 ): AsyncGenerator<KommuneState, void, unknown> {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
-  const response = await fetch(`${apiUrl}/stream`, {
+  const response = await fetch(`${API_URL}/chat/stream`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -110,8 +166,6 @@ export async function* streamKommuneChat(
   const reader = response.body.getReader();
   const decoder = new TextDecoder("utf-8");
   let buffer = "";
-  let accumulatedState: KommuneState = {};
-  let receivedDone = false;
 
   try {
     while (true) {
@@ -119,163 +173,50 @@ export async function* streamKommuneChat(
       if (done) break;
 
       buffer += decoder.decode(value, { stream: true });
-      const parts = buffer.split("\n\n");
-      buffer = parts.pop() || "";
 
-      for (const part of parts) {
-        const trimmedPart = part.trim();
-        if (!trimmedPart.startsWith("data: ")) continue;
-        const jsonString = trimmedPart.replace(/^data:\s*/, "");
+      // SSE frames are separated by a blank line ("\n\n")
+      const frames = buffer.split("\n\n");
+      buffer = frames.pop() || ""; // keep last (possibly incomplete) frame
 
-        if (jsonString === "[DONE]") {
-          receivedDone = true;
+      for (const frame of frames) {
+        if (!frame.trim()) continue;
+
+        let eventName: "routing" | "message" | "emergency" | "done" = "message";
+        let dataLine = "";
+
+        // A frame can contain multiple lines (event:, data:); parse each
+        for (const rawLine of frame.split("\n")) {
+          const line = rawLine.trim();
+          if (line.startsWith("event:")) {
+            eventName = line.slice("event:".length).trim() as typeof eventName;
+          } else if (line.startsWith("data:")) {
+            dataLine = line.slice("data:".length).trim();
+          }
+        }
+
+        if (!dataLine) continue;
+
+        let parsed: Record<string, unknown>;
+        try {
+          parsed = JSON.parse(dataLine);
+        } catch (parseError) {
+          // eslint-disable-next-line no-console
+          console.error("Failed to parse SSE JSON chunk:", dataLine, parseError);
+          continue;
+        }
+
+        if (eventName === "done") {
           return;
         }
 
-        try {
-          const parsedState: KommuneState = JSON.parse(jsonString);
-          accumulatedState = { ...accumulatedState, ...parsedState };
-          yield accumulatedState;
-        } catch (parseError) {
-          // eslint-disable-next-line no-console
-          console.error("Failed to parse SSE JSON chunk:", jsonString, parseError);
-        }
+        yield { ...parsed, _event: eventName } as KommuneState;
       }
-    }
-
-    if (!receivedDone) {
-      throw new Error("Stream ended unexpectedly without [DONE] signal");
     }
   } finally {
-    reader.releaseLock();
-  }
-}
-
-export async function streamChat(
-
-  message: string,
-  history: any[],
-  handlers: StreamHandlers,
-  userId?: string,
-  sessionId?: string,
-) {
-  const body = {
-    message,
-    history,
-    user_id: userId,
-    session_id: sessionId,
-  };
-
-  const res = await fetch(`${API_URL}/chat/stream`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Accept": "text/event-stream",
-    },
-    body: JSON.stringify(body),
-  });
-
-  if (!res.ok || !res.body) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`streamChat failed: ${res.status} ${text}`);
-  }
-
-  const reader = res.body.getReader();
-  const decoder = new TextDecoder("utf-8");
-  let buffer = "";
-
-  const dispatchEvent = (eventName: string | null, dataStr: string) => {
-    const payload = parseSseEventData(dataStr);
-    if (eventName === "routing") handlers.onRouting?.(payload);
-    else if (eventName === "emergency") handlers.onEmergency?.(payload);
-    else if (eventName === "message") {
-      // Spec says "event: message" frames and handlers.onDelta expects {delta}
-      const delta =
-        typeof payload?.delta === "string"
-          ? payload.delta
-          : typeof payload?.message === "string"
-            ? payload.message
-            : typeof payload === "string"
-              ? payload
-              : payload?.message;
-
-      if (typeof delta === "string") handlers.onDelta?.({ delta });
-      else handlers.onDelta?.(payload);
-    } else if (eventName === "done") handlers.onDone?.(payload);
-  };
-
-  let currentEvent: string | null = null;
-  let currentData = "";
-
-  while (true) {
-    const { value, done } = await reader.read();
-    if (done) break;
-
-    buffer += decoder.decode(value, { stream: true });
-
-    // Process complete SSE blocks separated by double newline
-    let idx: number;
-    while ((idx = buffer.indexOf("\n\n")) !== -1) {
-      const block = buffer.slice(0, idx);
-      buffer = buffer.slice(idx + 2);
-
-      const lines = block.split(/\r?\n/);
-      for (const line of lines) {
-        if (line.startsWith("event:")) {
-          currentEvent = line.slice("event:".length).trim();
-        } else if (line.startsWith("data:")) {
-          const dataPart = line.slice("data:".length).trim();
-          // Some SSE implementations send multiple data lines; we join them.
-          currentData += (currentData ? "\n" : "") + dataPart;
-        } else if (line.trim() === "") {
-          // ignore
-        }
-      }
-
-      if (currentEvent && currentData) {
-        dispatchEvent(currentEvent, currentData);
-      }
-
-      currentEvent = null;
-      currentData = "";
+    try {
+      reader.releaseLock();
+    } catch {
+      // ignore
     }
   }
 }
-
-export async function requestActivation(payload: {
-  email?: string;
-  whatsapp_number?: string;
-}) {
-  const res = await fetch(`${API_URL}/activate/request`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Accept": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
-
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`requestActivation failed: ${res.status} ${text}`);
-  }
-
-  return res.json();
-}
-
-export async function getActivationStatus(reference: string) {
-  const res = await fetch(`${API_URL}/activate/status/${reference}`, {
-    method: "GET",
-    headers: {
-      "Accept": "application/json",
-    },
-  });
-
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`getActivationStatus failed: ${res.status} ${text}`);
-  }
-
-  return res.json();
-}
-

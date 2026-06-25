@@ -5,11 +5,12 @@ import re
 import json
 from typing import Optional
 
-import anthropic
+from google import genai
+from google.genai import types
 
-client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 
-MODEL = "claude-sonnet-4-6"
+MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
 
 MAX_HANDOFFS = int(os.environ.get("MAX_HANDOFFS", "3"))
 
@@ -67,8 +68,36 @@ situations happening now — not for general questions about rights,
 processes, or past events. Most messages should NOT trigger this.
 """
 
+PRIORITY_INSTRUCTIONS = """
+
+PRIORITY CASE FLAGGING PROTOCOL:
+Some situations aren't an active emergency (nothing is happening RIGHT NOW)
+but put the person at serious ongoing legal risk and warrant proactive NGO
+referral. This includes:
+- Expired permits/passports, especially where a renewal application is
+  stuck, overdue, or the person's home country embassy won't reissue a
+  passport
+- Final asylum rejection (appeal exhausted) where the person has overstayed
+  and remains in South Africa
+- Any situation where the person is currently undocumented/out of status
+  through no clear fault of their own (e.g. DHA processing delays)
+
+For these, AFTER your normal helpful response (do not skip giving real
+guidance), add a tag on its own line at the END of your response:
+
+[[PRIORITY: <reason>]]
+
+where <reason> is a short (2-6 word) description, e.g. "overstayed after
+final rejection" or "expired permit, stuck renewal". This does NOT lock the
+conversation — continue normally. It flags the case for proactive referral
+to LHR/Scalabrini so a human can follow up, even if the user doesn't
+explicitly ask for escalation. Do not use this for routine questions about
+people who currently have valid status.
+"""
+
 HANDOFF_PATTERN = re.compile(r"\[\[HANDOFF:\s*(\w+)\s*\]\]", re.IGNORECASE)
 EMERGENCY_PATTERN = re.compile(r"\[\[EMERGENCY:\s*([^\]]+)\]\]", re.IGNORECASE)
+PRIORITY_PATTERN = re.compile(r"\[\[PRIORITY:\s*([^\]]+)\]\]", re.IGNORECASE)
 
 
 def extract_handoff(text: str) -> tuple[str, Optional[str]]:
@@ -99,21 +128,51 @@ def extract_emergency(text: str) -> tuple[str, Optional[str]]:
     return clean_text, reason
 
 
+def extract_priority(text: str) -> tuple[str, Optional[str]]:
+    """Strip a priority-case tag from response text. Returns
+    (clean_text, reason_or_None)."""
+    match = PRIORITY_PATTERN.search(text)
+    if not match:
+        return text, None
+
+    reason = match.group(1).strip()
+    clean_text = PRIORITY_PATTERN.sub("", text, count=1).strip()
+    return clean_text, reason
+
+
+def _to_gemini_contents(messages: list[dict]) -> list[types.Content]:
+    """Convert our internal [{"role": "user"|"assistant", "content": str}]
+    message list into Gemini's Content format. Gemini uses "model" instead
+    of "assistant" for the AI role."""
+    contents = []
+    for m in messages:
+        role = "model" if m["role"] == "assistant" else "user"
+        contents.append(types.Content(role=role, parts=[types.Part(text=m["content"])]))
+    return contents
+
+
 def call_agent(
     system_prompt: str,
     messages: list[dict],
     max_tokens: int = 1024,
 ) -> str:
-    """Call the Anthropic API and return concatenated text content."""
-    response = client.messages.create(
+    """Call the Gemini API and return the response text."""
+    contents = _to_gemini_contents(messages)
+
+    response = client.models.generate_content(
         model=MODEL,
-        max_tokens=max_tokens,
-        system=system_prompt,
-        messages=messages,
+        contents=contents,
+        config=types.GenerateContentConfig(
+            system_instruction=system_prompt,
+            max_output_tokens=max_tokens,
+        ),
     )
-    return "".join(block.text for block in response.content if block.type == "text")
+    return response.text or ""
 
 
+# ---------------------------------------------------------------------------
+# Tool-calling loop (Gemini function calling + Google Search grounding)
+# ---------------------------------------------------------------------------
 def call_agent_with_tools(
     system_prompt: str,
     messages: list[dict],
@@ -121,11 +180,13 @@ def call_agent_with_tools(
     max_tokens: int = 1536,
     max_iterations: int = 5,
 ) -> tuple[str, list[dict]]:
-    """Run an agentic tool-use loop: call Claude, execute any requested
-    tools (web_search is executed server-side by Anthropic; other tools
-    are dispatched via app.core.tools.registry.execute_tool), feed results
-    back, and repeat until Claude responds with text only (or
-    max_iterations is hit).
+    """Run an agentic tool-use loop with Gemini.
+
+    `tools` is our internal tool-spec format (see app.core.tools.registry).
+    A special entry {"type": "web_search"} requests Gemini's built-in
+    Google Search grounding tool. Other entries are converted to Gemini
+    function declarations and dispatched via
+    app.core.tools.registry.execute_tool when Gemini calls them.
 
     Returns (final_text, tool_calls_log) where tool_calls_log is a list of
     {"tool": str, "input": dict, "result": dict} for non-search tools,
@@ -133,52 +194,95 @@ def call_agent_with_tools(
     """
     from app.core.tools.registry import execute_tool
 
-    conversation = list(messages)
+    contents = _to_gemini_contents(messages)
     tool_calls_log: list[dict] = []
 
+    # Split out web_search (Gemini's built-in grounding) from custom
+    # function-calling tools (send_email, schedule_appointment, etc.)
+    gemini_tools = []
+    has_search = any(t.get("type") == "web_search_20250305" or t.get("name") == "web_search" for t in tools)
+    function_tools = [t for t in tools if t.get("name") not in (None, "web_search") and "input_schema" in t]
+
+    if has_search:
+        gemini_tools.append(types.Tool(google_search=types.GoogleSearch()))
+
+    if function_tools:
+        declarations = [
+            types.FunctionDeclaration(
+                name=t["name"],
+                description=t.get("description", ""),
+                parameters=_to_gemini_schema(t["input_schema"]),
+            )
+            for t in function_tools
+        ]
+        gemini_tools.append(types.Tool(function_declarations=declarations))
+
+    config = types.GenerateContentConfig(
+        system_instruction=system_prompt,
+        max_output_tokens=max_tokens,
+        tools=gemini_tools if gemini_tools else None,
+    )
+
+    final_text = ""
+
     for _ in range(max_iterations):
-        response = client.messages.create(
+        response = client.models.generate_content(
             model=MODEL,
-            max_tokens=max_tokens,
-            system=system_prompt,
-            messages=conversation,
-            tools=tools if tools else None,
+            contents=contents,
+            config=config,
         )
 
-        # Collect text and any client-side tool_use blocks (web_search is
-        # handled server-side by Anthropic and returns server_tool_use /
-        # web_search_tool_result blocks that don't need our dispatch).
-        text_parts = []
-        client_tool_uses = []
-
-        for block in response.content:
-            if block.type == "text":
-                text_parts.append(block.text)
-            elif block.type == "tool_use" and block.name in ("send_email", "schedule_appointment"):
-                client_tool_uses.append(block)
-
-        final_text = "".join(text_parts)
-
-        if response.stop_reason != "tool_use" or not client_tool_uses:
+        candidate = response.candidates[0] if response.candidates else None
+        if not candidate:
             return final_text, tool_calls_log
 
-        # Execute client-side tools and append results
-        conversation.append({"role": "assistant", "content": response.content})
+        function_calls = []
+        text_parts = []
 
-        tool_results = []
-        for tool_use in client_tool_uses:
-            result = execute_tool(tool_use.name, tool_use.input)
-            tool_calls_log.append(
-                {"tool": tool_use.name, "input": tool_use.input, "result": result}
-            )
-            tool_results.append(
-                {
-                    "type": "tool_result",
-                    "tool_use_id": tool_use.id,
-                    "content": json.dumps(result, default=str),
-                }
+        for part in candidate.content.parts:
+            if getattr(part, "text", None):
+                text_parts.append(part.text)
+            if getattr(part, "function_call", None):
+                function_calls.append(part.function_call)
+
+        final_text = "".join(text_parts) if text_parts else final_text
+
+        if not function_calls:
+            return final_text, tool_calls_log
+
+        # Append the model's turn (including function call parts) to history
+        contents.append(candidate.content)
+
+        # Execute each function call and append results
+        response_parts = []
+        for fc in function_calls:
+            tool_input = dict(fc.args) if fc.args else {}
+            result = execute_tool(fc.name, tool_input)
+            tool_calls_log.append({"tool": fc.name, "input": tool_input, "result": result})
+            response_parts.append(
+                types.Part.from_function_response(
+                    name=fc.name,
+                    response={"result": result},
+                )
             )
 
-        conversation.append({"role": "user", "content": tool_results})
+        contents.append(types.Content(role="user", parts=response_parts))
 
     return final_text, tool_calls_log
+
+
+def _to_gemini_schema(input_schema: dict) -> types.Schema:
+    """Convert our internal JSON-schema-style tool input_schema into a
+    Gemini types.Schema object."""
+    properties = {}
+    for key, prop in input_schema.get("properties", {}).items():
+        properties[key] = types.Schema(
+            type=prop.get("type", "string").upper(),
+            description=prop.get("description", ""),
+        )
+
+    return types.Schema(
+        type="OBJECT",
+        properties=properties,
+        required=input_schema.get("required", []),
+    )

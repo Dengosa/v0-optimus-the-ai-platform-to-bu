@@ -5,8 +5,8 @@ from functools import lru_cache
 
 
 class Settings:
-    ANTHROPIC_API_KEY: str = os.environ.get("ANTHROPIC_API_KEY", "")
-    MODEL: str = "claude-sonnet-4-6"
+    GEMINI_API_KEY: str = os.environ.get("GEMINI_API_KEY", "")
+    MODEL: str = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
 
     SUPABASE_URL: str = os.environ.get("SUPABASE_URL", "")
     SUPABASE_SERVICE_KEY: str = os.environ.get("SUPABASE_SERVICE_KEY", "")

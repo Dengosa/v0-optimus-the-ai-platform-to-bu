@@ -5,15 +5,15 @@ import { AnimatedWave } from "./animated-wave";
 
 const footerLinks = {
   "The good": [
-    { name: "Home", href: "#" },
+    { name: "Home", href: "/" },
     { name: "Manifesto", href: "#features" },
     { name: "Research", href: "#how-it-works" },
-    { name: "Careers", href: "#", badge: "Hiring" },
+    { name: "Careers", href: "/", badge: "Hiring" },
   ],
   "The boring": [
-    { name: "Terms", href: "#" },
-    { name: "Privacy", href: "#" },
-    { name: "Press", href: "#" },
+    { name: "Terms", href: "/" },
+    { name: "Privacy", href: "/" },
+    { name: "Press", href: "/" },
     { name: "Compliance", href: "#security" },
   ],
   "The bold": [

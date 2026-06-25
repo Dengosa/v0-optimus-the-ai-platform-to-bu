@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 
 from app.core.state import KommuneState
-from app.core.agents._shared import client, MODEL, NGO_MAP
+from app.core.agents._shared import call_agent, NGO_MAP
 
 SYSTEM_PROMPT = f"""You are Nemo, the routing intelligence for Kommune,
 a platform that helps migrants in South Africa navigate legal, financial,
@@ -56,16 +56,9 @@ async def run_nemo_router(context: dict) -> dict:
 
     context_messages = history + [{"role": "user", "content": user_message}]
 
-    response = client.messages.create(
-        model=MODEL,
-        max_tokens=200,
-        system=SYSTEM_PROMPT,
-        messages=context_messages,
-    )
-
-    raw = response.content[0].text.strip()
+    raw = call_agent(SYSTEM_PROMPT, context_messages, max_tokens=200)
+    raw = raw.strip()
     raw = raw.removeprefix("```json").removeprefix("```").removesuffix("```").strip()
-
     try:
         decision = json.loads(raw)
     except json.JSONDecodeError:

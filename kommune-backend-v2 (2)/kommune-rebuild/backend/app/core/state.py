@@ -28,6 +28,12 @@ class KommuneState(TypedDict, total=False):
     payment_status: bool
     gate_status: Literal["UNVERIFIED", "PENDING", "ACTIVE", "LOCKED"]
 
+    # True if this user is unactivated and within their free preview -
+    # agents give full informational answers but action tools (send_email,
+    # schedule_appointment) are disabled. Set by chat.py before invoking
+    # the graph.
+    preview_mode: bool
+
     # Emergency protocol — circuit breaker for detention/crisis situations.
     # When emergency_triggered=True, the graph short-circuits: it skips
     # normal agent routing/handoffs and returns a rights checklist +
@@ -37,6 +43,12 @@ class KommuneState(TypedDict, total=False):
     emergency_event_id: Optional[str]
     emergency_metadata: Optional[Dict[str, Any]]
     emergency_locked_at: Optional[float]
+
+    # Priority case flag — does NOT lock the session, but flags the case
+    # for proactive NGO referral (e.g. expired permits with stuck renewals,
+    # overstayed after final asylum rejection).
+    priority_flagged: bool
+    priority_reason: Optional[str]
 
     # Conversation
     messages: List[dict]  # [{"role": "user"|"assistant", "content": str}]
@@ -86,11 +98,14 @@ def new_state(*, session_id: str, user_id: str) -> KommuneState:
         "user_id": user_id,
         "payment_status": False,
         "gate_status": "UNVERIFIED",
+        "preview_mode": False,
         "emergency_triggered": False,
         "emergency_reason": None,
         "emergency_event_id": None,
         "emergency_metadata": None,
         "emergency_locked_at": None,
+        "priority_flagged": False,
+        "priority_reason": None,
         "messages": [],
         "agent": None,
         "next_agent": "router",

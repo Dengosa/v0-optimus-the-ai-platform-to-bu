@@ -117,6 +117,19 @@ def _make_specialist_node(agent_name: str):
                 for ex in exchanges
             )
 
+        # Priority case flag (e.g. expired permit with stuck renewal,
+        # overstayed after final asylum rejection). Does not lock the
+        # session, but logs for proactive NGO follow-up.
+        priority_reason = result.get("priority_reason")
+        if priority_reason:
+            ledger.write_entry(
+                session_id=state["session_id"],
+                actor=agent_name,
+                action="PRIORITY_FLAG",
+                resource="session",
+                metadata={"reason": priority_reason, "ngo": result.get("ngo")},
+            )
+
         ledger.write_entry(
             session_id=state["session_id"],
             actor=agent_name,
@@ -159,6 +172,8 @@ def _make_specialist_node(agent_name: str):
             "agent": agent_name if not result.get("handoff_to") else state.get("agent"),
             "escalate_ngo": result.get("escalate_ngo", state.get("escalate_ngo", False)),
             "ngo": result.get("ngo", state.get("ngo")),
+            "priority_flagged": priority_reason is not None or state.get("priority_flagged", False),
+            "priority_reason": priority_reason or state.get("priority_reason"),
         }
 
     return node

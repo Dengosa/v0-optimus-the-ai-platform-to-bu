@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 
 const navLinks = [
-  { name: "Home", href: "#" },
+  { name: "Home", href: "/" },
   { name: "Manifesto", href: "#features" },
   { name: "Research", href: "#how-it-works" },
   { name: "Careers", href: "#pricing" },
@@ -69,10 +69,11 @@ export function Navigation() {
               Sign in
             </a>
             <Button
+              asChild
               size="sm"
               className={`bg-foreground hover:bg-foreground/90 text-background rounded-full transition-all duration-500 ${isScrolled ? "px-4 h-8 text-xs" : "px-6"}`}
             >
-              Get started
+              <a href="/activate">Get started</a>
             </Button>
           </div>
 
@@ -137,10 +138,11 @@ export function Navigation() {
               Sign in
             </Button>
             <Button 
+              asChild
               className="flex-1 bg-foreground text-background rounded-full h-14 text-base"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              Get started
+              <a href="/activate">Get started</a>
             </Button>
           </div>
         </div>

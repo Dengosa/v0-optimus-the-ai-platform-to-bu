@@ -77,13 +77,20 @@ SCHEDULE_APPOINTMENT_TOOL = {
 }
 
 
-def get_tools_for_agent(agent_name: str) -> list[dict]:
+def get_tools_for_agent(agent_name: str, preview_mode: bool = False) -> list[dict]:
     """Return the tool set available to a given specialist agent.
 
     Legal (Lex) gets the full action toolkit: web search, email, calendar.
     Other agents currently get web search only; can be extended similarly.
+
+    `preview_mode=True` (unactivated users in their free preview) disables
+    action tools (send_email, schedule_appointment) — agents can still give
+    full informational answers and web search, but cannot execute actions
+    until the user activates their account.
     """
     if agent_name == "legal":
+        if preview_mode:
+            return [WEB_SEARCH_TOOL]
         return [WEB_SEARCH_TOOL, SEND_EMAIL_TOOL, SCHEDULE_APPOINTMENT_TOOL]
     return [WEB_SEARCH_TOOL]
 

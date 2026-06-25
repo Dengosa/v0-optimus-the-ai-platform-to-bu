@@ -5,9 +5,11 @@ from app.core.agents._shared import (
     call_agent_with_tools,
     extract_handoff,
     extract_emergency,
+    extract_priority,
     AGENT_DISPLAY_NAMES,
     HANDOFF_INSTRUCTIONS,
     EMERGENCY_INSTRUCTIONS,
+    PRIORITY_INSTRUCTIONS,
     MAX_HANDOFFS,
     NGO_MAP,
 )
@@ -89,7 +91,35 @@ on the situation.
 
 You are not a substitute for a lawyer — for complex cases, always recommend
 escalation to LHR or Scalabrini Centre alongside your guidance.
-""" + EMERGENCY_INSTRUCTIONS + HANDOFF_INSTRUCTIONS
+EXPIRED DOCUMENTS AND OVERSTAY GUIDANCE:
+- **Expired permit/passport, renewal pending or stuck**: Many people's
+  Section 22/24 permits expire while a renewal application is on file with
+  DHA due to processing backlogs. Explain clearly that South African courts
+  have repeatedly held that a person with a *pending* renewal application
+  remains lawfully in the process (the "Sigauke" line of cases) even if the
+  physical permit has lapsed — they should keep proof of the pending
+  application on them at all times. If no renewal was filed yet, help them
+  understand the renewal process and offer to draft the application or a
+  cover letter. If their home country embassy won't reissue an expired
+  passport (common for some nationalities), explain that DHA can sometimes
+  accept alternative ID documents for permit purposes — web search for
+  current DHA guidance on this, as it's case-by-case.
+
+- **Final asylum rejection, appeal exhausted, overstayed**: This is the
+  highest-risk group. Be honest but not alarmist. Explain the realistic
+  options calmly: (1) if there were procedural errors in the rejection, a
+  judicial review may be possible — time limits apply, so urgency matters;
+  (2) if circumstances have genuinely changed since the rejection (new
+  family ties to an SA citizen, new risks in the home country, new
+  qualifying skills), a new application or different visa route may be
+  possible; (3) voluntary departure is an option but carries re-entry
+  considerations. NEVER suggest simply "staying under the radar" — this
+  increases vulnerability to exploitation, arrest, and detention with no
+  protection. For this scenario, ALWAYS proactively flag for LHR referral
+  (see PRIORITY CASE FLAGGING below) even if the user hasn't asked for
+  escalation, since LHR specializes in exactly these post-rejection cases.
+
+""" + EMERGENCY_INSTRUCTIONS + PRIORITY_INSTRUCTIONS + HANDOFF_INSTRUCTIONS
 
 
 async def run_legal_agent(context: dict) -> dict:
@@ -121,10 +151,28 @@ async def run_legal_agent(context: dict) -> dict:
     user_turn = state["user_message"] + prior_context
     messages = history + [{"role": "user", "content": user_turn}]
 
-    tools = get_tools_for_agent("legal")
-    raw_text, tool_calls = call_agent_with_tools(SYSTEM_PROMPT, messages, tools)
+    preview_mode = state.get("preview_mode", False)
+    tools = get_tools_for_agent("legal", preview_mode=preview_mode)
+
+    system_prompt = SYSTEM_PROMPT
+    if preview_mode:
+        system_prompt += (
+            "\n\nPREVIEW MODE: This user has not yet activated their Kommune "
+            "account (R300 once-off). Give them a complete, genuinely useful "
+            "answer to their question — do not hold back information. "
+            "However, you do NOT have access to send_email or "
+            "schedule_appointment in this mode. If you would normally offer "
+            "to send an email or schedule something, instead say something "
+            "like: 'If you activate your Kommune account (R300 once-off), "
+            "I can draft and send this for you, and follow up until it's "
+            "resolved.' Keep this mention brief and natural — don't be "
+            "pushy, and don't repeat it if you've already mentioned "
+            "activation earlier in this conversation."
+        )
+    raw_text, tool_calls = call_agent_with_tools(system_prompt, messages, tools)
 
     clean_text, emergency_reason = extract_emergency(raw_text)
+    clean_text, priority_reason = extract_priority(clean_text)
     clean_text, handoff_agent = extract_handoff(clean_text)
 
     new_visited = visited + ["legal"]
@@ -136,8 +184,13 @@ async def run_legal_agent(context: dict) -> dict:
         "response": clean_text,
         "handoff_to": handoff_agent,
         "emergency_reason": emergency_reason,
+        "priority_reason": priority_reason,
         "visited_agents": new_visited,
-        "escalate_ngo": emergency_reason is not None,
-        "ngo": NGO_MAP["legal_detention"] if emergency_reason else state.get("ngo"),
+        "escalate_ngo": emergency_reason is not None or priority_reason is not None,
+        "ngo": (
+            NGO_MAP["legal_detention"]
+            if emergency_reason
+            else (NGO_MAP["asylum"] if priority_reason else state.get("ngo"))
+        ),
         "tool_calls": tool_calls,
     }

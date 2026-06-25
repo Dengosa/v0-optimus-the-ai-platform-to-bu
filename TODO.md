@@ -1,7 +1,10 @@
-- [ ] Inspect existing lib/api.ts SSE helper patterns
-- [ ] Define KommuneState TypeScript types and SSE generator utility in lib/api.ts
-- [ ] Implement async generator that POSTs payload to NEXT_PUBLIC_API_URL/stream and yields KommuneState objects from SSE JSON chunks
-- [ ] Add safe SSE parsing (handles partial lines/frames), network-drop error handling, and explicit CORS-related headers
-- [ ] Ensure exports don’t break existing imports
-- [ ] Run typecheck/build (if feasible) to confirm no TS errors
+# TODO
 
+## Backend/Frontend wiring
+- [x] Create `./.env.local` with `NEXT_PUBLIC_API_URL=http://localhost:8000`
+- [x] Create `./backend/.env` (generated from `backend/create_env_file.py` with placeholders)
+
+## Navigation / CTA routing
+- [x] Nav links point to valid routes (Home -> `/`)
+- [x] CTA buttons route to `/activate`
+- [x] Footer links point to valid routes (Home -> `/`, remove broken `#` for key items)

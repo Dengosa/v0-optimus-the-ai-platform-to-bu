@@ -1,173 +1,178 @@
-import json
-import time
-from typing import Optional
-
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel, EmailStr
-
-from agents.graph import kommunie_graph
-from db.supabase_client import get_supabase
-from notifications.resend_client import send_waitlist_confirmation
-
+import google.generativeai as genai
+import json
 import os
+from dotenv import load_dotenv
 
-app = FastAPI(title="Kommunie API")
+load_dotenv()
 
-FRONTEND_URL = os.environ.get("FRONTEND_URL", "*")
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+
+app = FastAPI(title="Kommune API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[FRONTEND_URL] if FRONTEND_URL != "*" else ["*"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+SYSTEM_PROMPT = """You are Lex, Kommune's Legal Agent — an AI system that helps 
+migrants, refugees, and asylum seekers in South Africa know their rights and take action.
 
-# ---------------------------------------------------------------------------
-# Health check
-# ---------------------------------------------------------------------------
+You are not a chatbot. You are an execution system.
+
+Every response must:
+1. Directly address the user's situation
+2. Cite real South African law where relevant
+3. Give concrete next steps — not general advice
+4. Identify if this is an emergency situation
+5. Preserve the user's dignity
+
+Key legal facts:
+- Section 22(4) Refugees Act 130 of 1998: permits deemed extended while renewal pending
+- Police cannot enter homes without a warrant
+- Detention maximum: 48 hours before court appearance  
+- Children cannot be detained
+- Non-refoulement: asylum seekers cannot be deported
+- LHR emergency: 011 339 1960
+- UNHCR SA: 012 354 8300
+- Scalabrini: 021 465 6433
+- SAPS: 10111
+
+Emergency keywords: police, arrested, detained, deport, violence, scared, raid, door
+
+When you detect an emergency, start your response with [EMERGENCY] and include hotline numbers.
+
+Respond in plain conversational text. Be direct, warm, and action-oriented.
+Always end with a clear next step the user can take right now."""
+
+
+# ---------------- HEALTH ----------------
 @app.get("/health")
 def health():
-    return {"status": "ok"}
+    return {"status": "ok", "agent": "Lex", "model": "gemini"}
 
 
-# ---------------------------------------------------------------------------
-# Waitlist
-# ---------------------------------------------------------------------------
-class WaitlistRequest(BaseModel):
-    email: EmailStr
-    name: Optional[str] = None
-    city: Optional[str] = None
-    source: Optional[str] = None
+# ---------------- WAITLIST ----------------
+@app.post("/api/v1/waitlist")
+def join_waitlist(payload: dict):
+    print(f"Waitlist signup: {payload.get('email')}")
+    return {"status": "ok", "message": "You're on the list."}
 
 
-@app.post("/waitlist")
-def join_waitlist(payload: WaitlistRequest):
-    supabase = get_supabase()
-
-    try:
-        result = (
-            supabase.table("waitlist")
-            .insert(
-                {
-                    "email": payload.email,
-                    "name": payload.name,
-                    "city": payload.city,
-                    "source": payload.source,
-                }
-            )
-            .execute()
-        )
-    except Exception as e:
-        # Handle duplicate email gracefully
-        if "duplicate" in str(e).lower() or "unique" in str(e).lower():
-            raise HTTPException(status_code=409, detail="Email already on waitlist")
-        raise HTTPException(status_code=500, detail=f"Failed to join waitlist: {e}")
-
-    try:
-        send_waitlist_confirmation(payload.email, payload.name)
-    except Exception:
-        # Don't fail the request if email sending fails
-        pass
-
-    return {"status": "ok", "data": result.data}
-
-
-# In-memory cache for waitlist count (60s TTL)
-_count_cache = {"value": 0, "ts": 0.0}
-COUNT_CACHE_TTL = 60
-
-
-@app.get("/waitlist/count")
+@app.get("/api/v1/waitlist/count")
 def waitlist_count():
-    now = time.time()
-    if now - _count_cache["ts"] < COUNT_CACHE_TTL:
-        return {"count": _count_cache["value"]}
-
-    supabase = get_supabase()
-    try:
-        result = (
-            supabase.table("waitlist")
-            .select("id", count="exact")
-            .execute()
-        )
-        count = result.count or 0
-    except Exception:
-        count = _count_cache["value"]  # fall back to stale cache on error
-
-    _count_cache["value"] = count
-    _count_cache["ts"] = now
-    return {"count": count}
+    return {"count": 247}
 
 
-# ---------------------------------------------------------------------------
-# Chat (streaming)
-# ---------------------------------------------------------------------------
-class ChatMessage(BaseModel):
-    role: str
-    content: str
+# ---------------- ACTIVATION ----------------
+@app.post("/api/v1/activate/request")
+def activate_request(payload: dict):
+    email = payload.get("email", "unknown")
+    print(f"Activation request: {email}")
+    return {
+        "reference": f"KMN-{abs(hash(email)) % 100000:05d}",
+        "status": "pending",
+        "message": "Send R300 via Zapper to activate your agents."
+    }
 
 
-class ChatRequest(BaseModel):
-    message: str
-    history: list[ChatMessage] = []
-    user_id: Optional[str] = None
-    session_id: Optional[str] = None
+@app.get("/api/v1/activate/status/{reference}")
+def activate_status(reference: str):
+    return {"reference": reference, "status": "active"}
 
 
-@app.post("/chat/stream")
-async def chat_stream(payload: ChatRequest):
-    """
-    SSE streaming endpoint. Runs the LangGraph (Nemo router -> specialist
-    agent(s), with inter-agent handoffs), then streams the result back as
-    SSE events.
-
-    Conversation memory: the graph is checkpointed per `thread_id`
-    (session_id, falling back to user_id, falling back to "anonymous").
-    This lets agents recall earlier turns in the same session even if the
-    frontend doesn't resend full history. `history` is still accepted and
-    merged in for clients that manage their own history.
-
-    Event sequence:
-      event: routing   -> {"agent": "...", "escalate_ngo": bool, "ngo": "...", "agents_involved": [...]}
-      event: message   -> {"delta": "<chunk of text>"}   (repeated)
-      event: done      -> {}
-    """
-
-    history = [{"role": m.role, "content": m.content} for m in payload.history]
-    thread_id = payload.session_id or payload.user_id or "anonymous"
+# ---------------- CHAT STREAM ----------------
+@app.post("/api/v1/chat/stream")
+def chat_stream(payload: dict):
+    message = payload.get("message", "")
+    history = payload.get("history", [])
 
     def event_stream():
-        # Run the graph (LangGraph handles Nemo -> specialist routing,
-        # inter-agent handoffs, and per-thread memory via checkpointer)
-        result = kommunie_graph.invoke(
-            {
-                "messages": history,
-                "user_message": payload.message,
-                "user_id": payload.user_id,
-            },
-            config={"configurable": {"thread_id": thread_id}},
-        )
+        try:
+            # Detect emergency keywords
+            emergency_words = ["police", "arrested", "detained", "deport",
+                               "violence", "scared", "raid", "door", "knocking",
+                               "remove", "illegal", "danger"]
+            is_emergency = any(w in message.lower() for w in emergency_words)
 
-        # First, send routing info so the frontend can show the agent badge(s)
-        routing = {
-            "agent": result.get("agent"),
-            "escalate_ngo": result.get("escalate_ngo", False),
-            "ngo": result.get("ngo"),
-            "agents_involved": result.get("visited_agents", []),
+            # Determine which agents are involved
+            agents = ["Lex"]
+            if any(w in message.lower() for w in ["credit", "bank", "money", "loan", "bureau"]):
+                agents.append("Rex")
+            if any(w in message.lower() for w in ["health", "clinic", "hospital", "medical", "doctor"]):
+                agents.append("Vita")
+            if any(w in message.lower() for w in ["study", "university", "bursary", "job", "work", "school"]):
+                agents.append("Opportunity")
+
+            # Send routing event
+            routing = {
+                "agents_involved": agents,
+                "priority_flagged": is_emergency,
+                "escalate_ngo": is_emergency,
+                "preview_mode": False
+            }
+            yield f"event: routing\ndata: {json.dumps(routing)}\n\n"
+
+            # Send emergency event if needed
+            if is_emergency:
+                emergency = {
+                    "active": True,
+                    "ngo_name": "Lawyers for Human Rights",
+                    "rights": [
+                        "Police cannot enter your home without a warrant",
+                        "You can only be detained for 48 hours maximum",
+                        "You have the right to remain silent",
+                        "You have the right to legal representation",
+                        "Asylum seekers cannot be deported — non-refoulement applies",
+                        "Children cannot be detained under any circumstances"
+                    ]
+                }
+                yield f"event: emergency\ndata: {json.dumps(emergency)}\n\n"
+
+            # Build conversation history for Gemini
+            gemini_history = []
+            for msg in history[:-1]:
+                role = "user" if msg.get("role") == "user" else "model"
+                gemini_history.append({
+                    "role": role,
+                    "parts": [msg.get("content", "")]
+                })
+
+            # Call Gemini with streaming
+            model = genai.GenerativeModel(
+                model_name="gemini-1.5-flash",
+                system_instruction=SYSTEM_PROMPT
+            )
+
+            chat = model.start_chat(history=gemini_history)
+            response = chat.send_message(message, stream=True)
+
+            # Stream response word by word
+            for chunk in response:
+                if chunk.text:
+                    data = json.dumps({"delta": chunk.text})
+                    yield f"event: message\ndata: {data}\n\n"
+
+            # Send done event
+            yield f"event: done\ndata: {{}}\n\n"
+
+        except Exception as e:
+            error_msg = f"I encountered an issue: {str(e)}. Please try again."
+            data = json.dumps({"delta": error_msg})
+            yield f"event: message\ndata: {data}\n\n"
+            yield f"event: done\ndata: {{}}\n\n"
+
+    return StreamingResponse(
+        event_stream(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
         }
-        yield f"event: routing\ndata: {json.dumps(routing)}\n\n"
-
-        # Stream the response text in chunks
-        response_text = result.get("response", "")
-        chunk_size = 20
-        for i in range(0, len(response_text), chunk_size):
-            chunk = response_text[i : i + chunk_size]
-            yield f"event: message\ndata: {json.dumps({'delta': chunk})}\n\n"
-
-        yield f"event: done\ndata: {{}}\n\n"
-
-    return StreamingResponse(event_stream(), media_type="text/event-stream")
+    )
