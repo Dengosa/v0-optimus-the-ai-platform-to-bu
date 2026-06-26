@@ -3,7 +3,7 @@
 import { CheckCircle2, MessageSquare, Mail, PhoneCall } from "lucide-react";
 
 export function PricingSection() {
-  const PAYMENT_LINK = "https://paystack.com/pay/kommune-access";
+  const PAYMENT_LINK = "/activate#get-access";
 
   const features = [
     "Full access to the Legal Agent (Labor & Tenant rights guide)",
@@ -61,7 +61,7 @@ export function PricingSection() {
                 rel="noopener noreferrer"
                 className="flex w-full items-center justify-center h-12 px-6 font-semibold text-md rounded-xl bg-primary text-primary-foreground shadow hover:opacity-95 transition-opacity"
               >
-                Activate My Infrastructure
+                Start My Journey
               </a>
             </div>
           </div>
