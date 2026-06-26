@@ -188,7 +188,7 @@ def _build_rights_checklist(agent_name: str, ngo: str | None) -> dict:
             "You have the right to remain silent and to request a lawyer.",
             "You have the right to contact a person of your choice (family, NGO).",
             "Do not sign any documents you do not understand.",
-            f"Kommune is escalating this to {ngo or 'a partner NGO'} now.",
+            "📞 CALL NOW — Immigration Crisis Hotline: 081 716 8791",
         ],
         "agent": agent_name,
         "ngo": ngo,

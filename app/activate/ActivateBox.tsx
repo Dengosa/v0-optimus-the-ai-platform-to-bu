@@ -32,7 +32,7 @@ export default function ActivateBox(props: Props) {
   }, [props.email, props.whatsappNumber, props.isProcessing]);
 
   return (
-    <section className="mt-10">
+    <section id="get-access" className="mt-10">
       <div className="grid lg:grid-cols-2 gap-6">
         <div className="rounded-2xl border border-foreground/10 bg-background p-6 lg:p-8">
           <div className="flex items-center justify-between gap-4">

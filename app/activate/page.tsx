@@ -107,8 +107,8 @@ export default function ActivatePage() {
             className="w-full bg-foreground hover:bg-foreground/90 text-background rounded-full px-6 group h-14"
           >
             <Link
-              href="/welcome"
-              onClick={() => {
+              href="#get-access"
+              onClick={(e) => {
                 // keep legacy CTA styling but do not trigger activation here
               }}
             >
