@@ -14,6 +14,7 @@ const integrations = [
   { name: "Credit building", category: "Credit agent" },
   { name: "Bureau disputes", category: "Credit agent" },
   { name: "Healthcare rights", category: "Health agent" },
+  
   { name: "Clinic access", category: "Health agent" },
 ];
 

@@ -129,12 +129,12 @@ return (
                 <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
               </Link>
             </Button>
-            <Button 
+            <Button asChild
               size="lg" 
               variant="outline" 
               className="h-14 px-8 text-base rounded-full border-foreground/20 hover:bg-foreground/5"
             >
-              See How It Works
+              <Link href="/pathways">See How It Works</Link>
             </Button>
           </div>
         </div>
@@ -174,3 +174,4 @@ return (
     </section>
   );
 }
+
