@@ -205,3 +205,16 @@ def spotme(payload: SpotMeRequest):
         status="spotted",
         message=f"Your friend has been spotted! We will activate them alongside you once payment is confirmed."
     )
+@router.get("/admin/activations")
+def list_activations(x_admin_secret: str = Header(default="")):
+    if not ADMIN_SECRET or x_admin_secret != ADMIN_SECRET:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    supabase = get_supabase()
+    result = (
+        supabase.table("pending_activations")
+        .select("*")
+        .order("created_at", desc=True)
+        .execute()
+    )
+    return result.data or []
