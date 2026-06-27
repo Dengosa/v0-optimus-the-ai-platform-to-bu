@@ -61,3 +61,29 @@ export async function* streamKommuneChat(
     }
   }
 }
+
+export async function getActivationStatus(reference: string): Promise<{ status: string }> {
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8000";
+  try {
+    const res = await fetch(`${backendUrl}/activate/status?reference=${reference}`);
+    if (!res.ok) return { status: "pending" };
+    return res.json();
+  } catch {
+    return { status: "pending" };
+  }
+}
+
+export async function requestActivation(payload: { email?: string; whatsapp_number?: string }): Promise<{ reference?: string; qr_code_url?: string; instructions?: string }> {
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8000";
+  try {
+    const res = await fetch(`${backendUrl}/activate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) return {};
+    return res.json();
+  } catch {
+    return {};
+  }
+}
