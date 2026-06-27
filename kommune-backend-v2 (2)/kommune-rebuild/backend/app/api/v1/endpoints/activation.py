@@ -157,3 +157,51 @@ def activation_status(reference: str):
     if not result.data:
         return ActivationStatusResponse(status="not_found")
     return ActivationStatusResponse(status=result.data[0]["status"])
+
+
+
+
+class SpotMeRequest(BaseModel):
+    reference: str
+    friend_contact: str
+
+
+class SpotMeResponse(BaseModel):
+    status: str
+    message: str
+
+
+@router.post("/activate/spotme", response_model=SpotMeResponse)
+def spotme(payload: SpotMeRequest):
+    if not payload.reference or not payload.friend_contact:
+        raise HTTPException(status_code=400, detail="Reference and friend contact are required")
+
+    supabase = get_supabase()
+
+    result = supabase.table("pending_activations").select("*").eq("reference", payload.reference).execute()
+    if not result.data:
+        raise HTTPException(status_code=404, detail="Activation reference not found")
+
+    record = result.data[0]
+
+    if record.get("spotme_used"):
+        raise HTTPException(status_code=409, detail="SpotMe has already been used for this reference")
+
+    friend_reference = _generate_reference()
+
+    supabase.table("pending_activations").insert({
+        "reference": friend_reference,
+        "email": payload.friend_contact if "@" in payload.friend_contact else None,
+        "whatsapp_number": payload.friend_contact if "@" not in payload.friend_contact else None,
+        "status": "pending",
+        "spotted_by": payload.reference,
+    }).execute()
+
+    supabase.table("pending_activations").update(
+        {"spotme_used": True}
+    ).eq("reference", payload.reference).execute()
+
+    return SpotMeResponse(
+        status="spotted",
+        message=f"Your friend has been spotted! We will activate them alongside you once payment is confirmed."
+    )

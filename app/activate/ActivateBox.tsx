@@ -30,7 +30,7 @@ export default function ActivateBox(props: Props) {
     return (hasEmail || hasWhatsapp) && !props.isProcessing;
   }, [props.email, props.whatsappNumber, props.isProcessing]);
 
-  const handleSpotme = () => {
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
     if (!spotmeContact.trim()) return;
     setSpotmeSent(true);
   };
@@ -86,7 +86,7 @@ export default function ActivateBox(props: Props) {
             )}
 
             <div className="flex flex-col sm:flex-row gap-3 pt-2">
-              <Button
+              {spotmeError && <div className="text-sm text-red-500">{spotmeError}</div>}
                 type="submit"
                 disabled={!canSubmit}
                 className="rounded-full bg-foreground hover:bg-foreground/90 text-background px-6 group h-12"
@@ -97,7 +97,7 @@ export default function ActivateBox(props: Props) {
                   </span>
                 ) : "Request Activation"}
               </Button>
-              <Button
+              {spotmeError && <div className="text-sm text-red-500">{spotmeError}</div>}
                 type="button"
                 variant="outline"
                 className="rounded-full border-foreground/20 hover:bg-foreground/5"
@@ -207,7 +207,7 @@ export default function ActivateBox(props: Props) {
                 value={spotmeContact}
                 onChange={(e) => setSpotmeContact(e.target.value)}
               />
-              <Button
+              {spotmeError && <div className="text-sm text-red-500">{spotmeError}</div>}
                 onClick={handleSpotme}
                 disabled={!spotmeContact.trim()}
                 className="w-full bg-foreground hover:bg-foreground/90 text-background rounded-full h-12"
