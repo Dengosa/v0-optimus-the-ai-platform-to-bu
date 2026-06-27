@@ -4,6 +4,8 @@ import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Check, Heart, Loader2, QrCode, RefreshCcw, ShieldCheck } from "lucide-react";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
 type Props = {
   step: "form" | "pending" | "confirmed";
   error: string | null;
@@ -23,6 +25,8 @@ type Props = {
 export default function ActivateBox(props: Props) {
   const [spotmeContact, setSpotmeContact] = useState("");
   const [spotmeSent, setSpotmeSent] = useState(false);
+  const [spotmeError, setSpotmeError] = useState<string | null>(null);
+  const [spotmeLoading, setSpotmeLoading] = useState(false);
 
   const canSubmit = useMemo(() => {
     const hasEmail = props.email.trim().length > 3;
@@ -30,15 +34,35 @@ export default function ActivateBox(props: Props) {
     return (hasEmail || hasWhatsapp) && !props.isProcessing;
   }, [props.email, props.whatsappNumber, props.isProcessing]);
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-    if (!spotmeContact.trim()) return;
-    setSpotmeSent(true);
+  const handleSpotme = async () => {
+    if (!spotmeContact.trim() || !props.activationRef) return;
+    setSpotmeLoading(true);
+    setSpotmeError(null);
+    try {
+      const res = await fetch(`${API_URL}/activate/spotme`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          reference: props.activationRef,
+          friend_contact: spotmeContact.trim(),
+        }),
+      });
+      if (res.ok) {
+        setSpotmeSent(true);
+      } else {
+        const err = await res.json();
+        setSpotmeError(err.detail || "Something went wrong. Please try again.");
+      }
+    } catch {
+      setSpotmeError("Could not connect. Please try again.");
+    } finally {
+      setSpotmeLoading(false);
+    }
   };
 
   return (
     <section id="get-access" className="mt-10 space-y-6">
       <div className="grid lg:grid-cols-2 gap-6">
-        {/* Left — Form */}
         <div className="rounded-2xl border border-foreground/10 bg-background p-6 lg:p-8">
           <div className="flex items-center justify-between gap-4">
             <div>
@@ -86,7 +110,7 @@ export default function ActivateBox(props: Props) {
             )}
 
             <div className="flex flex-col sm:flex-row gap-3 pt-2">
-              {spotmeError && <div className="text-sm text-red-500">{spotmeError}</div>}
+              <Button
                 type="submit"
                 disabled={!canSubmit}
                 className="rounded-full bg-foreground hover:bg-foreground/90 text-background px-6 group h-12"
@@ -97,7 +121,7 @@ export default function ActivateBox(props: Props) {
                   </span>
                 ) : "Request Activation"}
               </Button>
-              {spotmeError && <div className="text-sm text-red-500">{spotmeError}</div>}
+              <Button
                 type="button"
                 variant="outline"
                 className="rounded-full border-foreground/20 hover:bg-foreground/5"
@@ -113,7 +137,6 @@ export default function ActivateBox(props: Props) {
           </form>
         </div>
 
-        {/* Right — Status */}
         <div className="rounded-2xl border border-foreground/10 bg-background p-6 lg:p-8">
           <div className="flex items-center gap-3">
             <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-foreground/10">
@@ -166,7 +189,6 @@ export default function ActivateBox(props: Props) {
         </div>
       </div>
 
-      {/* SpotMe — only shows after reference is generated */}
       {props.step === "pending" && props.activationRef && (
         <div className="rounded-2xl border border-foreground/10 bg-background p-6 lg:p-8">
           <div className="flex items-center gap-3 mb-4">
@@ -208,11 +230,12 @@ export default function ActivateBox(props: Props) {
                 onChange={(e) => setSpotmeContact(e.target.value)}
               />
               {spotmeError && <div className="text-sm text-red-500">{spotmeError}</div>}
+              <Button
                 onClick={handleSpotme}
-                disabled={!spotmeContact.trim()}
+                disabled={!spotmeContact.trim() || spotmeLoading}
                 className="w-full bg-foreground hover:bg-foreground/90 text-background rounded-full h-12"
               >
-                <Heart className="w-4 h-4 mr-2" /> Spot My Friend
+                {spotmeLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Heart className="w-4 h-4 mr-2" /> Spot My Friend</>}
               </Button>
               <p className="text-xs text-muted-foreground">You can only SpotMe once. Choose wisely.</p>
             </div>
