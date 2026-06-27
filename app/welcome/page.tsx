@@ -141,7 +141,7 @@ export default function WelcomePage() {
                     {error && <div className="mt-3 text-sm text-red-500">{error}</div>}
                     <Button
                       disabled={!activeSlot || isBooking}
-                      onClick={handleBooking}
+                      onClick={() => window.open("https://calendly.com/inclusivebambu/30min", "_blank")}
                       className="w-full bg-foreground hover:bg-foreground/90 text-background rounded-full mt-4"
                     >
                       {isBooking ? "Booking..." : "Confirm Booking"}

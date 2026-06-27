@@ -8,7 +8,6 @@ const navLinks = [
   { name: "Home", href: "/" },
   { name: "Manifesto", href: "#features" },
   { name: "Research", href: "#how-it-works" },
-  { name: "Careers", href: "#pricing" },
 ];
 
 export function Navigation() {
@@ -44,7 +43,7 @@ export function Navigation() {
           }`}
         >
           {/* Logo */}
-          <a href="#" className="flex items-center gap-2 group">
+          <a href="/activate" className="flex items-center gap-2 group">
             <span className={`font-display tracking-tight transition-all duration-500 ${isScrolled ? "text-xl" : "text-2xl"}`}>Kommune</span>
             <span className={`text-muted-foreground font-mono transition-all duration-500 ${isScrolled ? "text-[10px] mt-0.5" : "text-xs mt-1"}`}>TM</span>
           </a>
@@ -65,7 +64,7 @@ export function Navigation() {
 
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center gap-4">
-            <a href="#" className={`text-foreground/70 hover:text-foreground transition-all duration-500 ${isScrolled ? "text-xs" : "text-sm"}`}>
+            <a href="/activate" className={`text-foreground/70 hover:text-foreground transition-all duration-500 ${isScrolled ? "text-xs" : "text-sm"}`}>
               Sign in
             </a>
             <Button
@@ -150,3 +149,5 @@ export function Navigation() {
     </header>
   );
 }
+
+
