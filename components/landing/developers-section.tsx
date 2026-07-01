@@ -42,7 +42,7 @@ const features = [
     description: "Every output written back with full history."
   },
   { 
-    title: "Agents pull & write", 
+    title: "Assistants pull & write",
     description: "Documents used and produced automatically."
   },
   { 

@@ -1,0 +1,19 @@
+diff a/components/landing/infrastructure-section.tsx b/components/landing/infrastructure-section.tsx	(rejected hunks)
+@@ -7,7 +7,7 @@ const locations = [
+   { city: "We don't inform. We execute.", region: "Every interaction produces a decision.", latency: "Action" },
+   { city: "Built for the forgotten.", region: "Migrants, refugees, asylum seekers.", latency: "Day 1" },
+   { city: "No SA ID required", region: "Foreign nationals from day one.", latency: "Open" },
+-  { city: "Every agent included", region: "All five, from the start.", latency: "All" },
++  { city: "Every assistant included", region: "All five, from the start.", latency: "All" },
+   { city: "One transferable pass", region: "Give another migrant access.", latency: "+1" },
+ ];
+ 
+@@ -67,7 +67,7 @@ export function InfrastructureSection() {
+               </div>
+               <div>
+                 <div className="text-4xl lg:text-5xl font-display mb-2">5</div>
+-                <div className="text-sm text-muted-foreground">Specialist agents</div>
++                <div className="text-sm text-muted-foreground">Specialist assistants</div>
+               </div>
+               <div>
+                 <div className="text-4xl lg:text-5xl font-display mb-2">+1</div>

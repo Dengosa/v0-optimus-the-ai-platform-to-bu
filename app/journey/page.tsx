@@ -3,12 +3,21 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, BarChart3, ShieldCheck, GraduationCap, HeartPulse, Wallet, Clock } from "lucide-react";
+import { ProofOfApplicationQR, type ApplicationRecord } from "@/components/proof-of-application-qr";
 
 const agents = [
-  { icon: ShieldCheck, label: "Legal Agent (Lex)", value: "Activating" },
-  { icon: GraduationCap, label: "Education Agent", value: "Activating" },
-  { icon: HeartPulse, label: "Health Agent (Vita)", value: "Activating" },
-  { icon: Wallet, label: "Credit Agent (Rex)", value: "Activating" },
+  { icon: ShieldCheck, label: "Legal Assistant (Lex)", value: "Activating" },
+  { icon: GraduationCap, label: "Education Assistant", value: "Activating" },
+  { icon: HeartPulse, label: "Health Assistant (Vita)", value: "Activating" },
+  { icon: Wallet, label: "Credit Assistant (Rex)", value: "Activating" },
+];
+
+// TODO: replace with real records pulled from the user's vault_entries once
+// the post-activation dashboard is wired to the backend.
+const demoRecords: ApplicationRecord[] = [
+  { type: "Section 22 Permit Renewal", appliedOn: "2026-03-14", status: "Under Review", reference: "HA-22841" },
+  { type: "NSFAS Bursary Application", appliedOn: "2026-04-02", status: "Submitted" },
+  { type: "FNB Bank Account (no SA ID)", appliedOn: "2026-04-10", status: "Approved" },
 ];
 
 export default function JourneyPage() {
@@ -29,7 +38,7 @@ export default function JourneyPage() {
           <section className="rounded-2xl border border-foreground/10 bg-background p-6 lg:p-8">
             <div className="flex items-center gap-3">
               <BarChart3 className="w-5 h-5 text-foreground" />
-              <h2 className="text-xl font-display">Agent Status</h2>
+              <h2 className="text-xl font-display">Assistant Status</h2>
             </div>
 
             <div className="mt-6 grid sm:grid-cols-2 gap-4">
@@ -105,6 +114,10 @@ export default function JourneyPage() {
               </p>
             </div>
           </section>
+        </div>
+
+        <div className="mt-6">
+          <ProofOfApplicationQR holderName="Khaya" records={demoRecords} />
         </div>
       </div>
     </main>

@@ -1,0 +1,37 @@
+diff a/components/landing/testimonials-section.tsx b/components/landing/testimonials-section.tsx	(rejected hunks)
+@@ -6,24 +6,31 @@ const testimonials = [
+   {
+     quote: "Filed my credit dispute and had a response in 3 days. I'd been trying for months on my own.",
+     author: "Chiedza M.",
+-    role: "Credit agent",
++    role: "Credit assistant",
+     company: "Johannesburg",
+     metric: "Dispute resolved in 3 days",
+   },
+   {
+     quote: "My Journey engine told me exactly what documents I needed for my visa renewal. It saved me.",
+     author: "Yusuf A.",
+-    role: "Legal agent",
++    role: "Legal assistant",
+     company: "Cape Town",
+     metric: "Visa renewal on track",
+   },
+   {
+-    quote: "Best administrative experience since arriving in South Africa. The agents handled everything.",
++    quote: "Best administrative experience since arriving in South Africa. The assistants handled everything.",
+     author: "Miriam K.",
+-    role: "Opportunity agent",
++    role: "Opportunity assistant",
+     company: "Durban",
+     metric: "Everything handled",
+   },
++  {
++    quote: "While I wait, Kommune got me into school and helped me open a bank account without an ID. I'm not stuck anymore.",
++    author: "Khaya, 22",
++    role: "Opportunity assistant",
++    company: "South Africa",
++    metric: "School and banking access while waiting",
++  },
+ ];
+ 
+ export function TestimonialsSection() {

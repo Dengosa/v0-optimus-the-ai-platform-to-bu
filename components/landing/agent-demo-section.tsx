@@ -354,7 +354,7 @@ export function AgentDemoSection() {
                   <Zap className="w-4 h-4" />
                 </span>
                 <div>
-                  <div className="font-medium mb-0.5">Real agents, routed automatically</div>
+                  <div className="font-medium mb-0.5">Real assistants, routed automatically</div>
                   <div className="text-sm text-muted-foreground leading-relaxed">
                     Legal, health, and opportunity specialists respond based on what you actually asked.
                   </div>

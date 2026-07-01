@@ -1,0 +1,10 @@
+diff a/components/landing/metrics-section.tsx b/components/landing/metrics-section.tsx	(rejected hunks)
+@@ -71,7 +71,7 @@ const metrics: Metric[] = [
+     value: 5,
+     suffix: "",
+     prefix: "",
+-    label: "Specialist agents working for you",
++    label: "Specialist assistants working for you",
+   },
+   {
+     // Placeholder until we fetch waitlist count

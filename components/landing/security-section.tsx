@@ -7,22 +7,22 @@ const securityFeatures = [
   {
     icon: FileCheck,
     title: "Experian dispute letter — entry 4421",
-    description: "Credit agent",
+    description: "Credit assistant",
   },
   {
     icon: Shield,
     title: "Lease agreement — 14 Morningside Rd",
-    description: "Legal agent",
+    description: "Legal assistant",
   },
   {
     icon: Eye,
     title: "CPA objection letter — clause 14(b)",
-    description: "Legal agent",
+    description: "Legal assistant",
   },
   {
     icon: Lock,
     title: "Discovery Health claim — #DH-44821",
-    description: "Health agent",
+    description: "Health assistant",
   },
 ];
 

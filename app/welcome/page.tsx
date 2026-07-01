@@ -185,7 +185,7 @@ export default function WelcomePage() {
               ))}
             </div>
             <div className="mt-6 rounded-xl border border-foreground/10 bg-secondary/30 p-4">
-              <div className="text-sm font-medium">Your AI agents are preparing.</div>
+              <div className="text-sm font-medium">Your AI assistants are preparing.</div>
               <div className="mt-2 text-sm text-muted-foreground">
                 Once payment is confirmed, your agents activate and your journey begins within 24 hours.
               </div>

@@ -1,0 +1,33 @@
+diff a/components/landing/integrations-section.tsx b/components/landing/integrations-section.tsx	(rejected hunks)
+@@ -3,19 +3,19 @@
+ import { useEffect, useState, useRef } from "react";
+ 
+ const integrations = [
+-  { name: "Visa issues", category: "Legal agent" },
+-  { name: "Expired documents", category: "Legal agent" },
+-  { name: "Asylum cases", category: "Legal agent" },
+-  { name: "Home Affairs", category: "Legal agent" },
+-  { name: "University applications", category: "Opportunity agent" },
+-  { name: "Bursaries", category: "Opportunity agent" },
+-  { name: "Learnerships", category: "Opportunity agent" },
+-  { name: "Bank eligibility", category: "Credit agent" },
+-  { name: "Credit building", category: "Credit agent" },
+-  { name: "Bureau disputes", category: "Credit agent" },
+-  { name: "Healthcare rights", category: "Health agent" },
++  { name: "Visa issues", category: "Legal assistant" },
++  { name: "Expired documents", category: "Legal assistant" },
++  { name: "Asylum cases", category: "Legal assistant" },
++  { name: "Home Affairs", category: "Legal assistant" },
++  { name: "University applications", category: "Opportunity assistant" },
++  { name: "Bursaries", category: "Opportunity assistant" },
++  { name: "Learnerships", category: "Opportunity assistant" },
++  { name: "Bank eligibility", category: "Credit assistant" },
++  { name: "Credit building", category: "Credit assistant" },
++  { name: "Bureau disputes", category: "Credit assistant" },
++  { name: "Healthcare rights", category: "Health assistant" },
+   
+-  { name: "Clinic access", category: "Health agent" },
++  { name: "Clinic access", category: "Health assistant" },
+ ];
+ 
+ export function IntegrationsSection() {

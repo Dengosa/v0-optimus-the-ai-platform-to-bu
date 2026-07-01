@@ -1,0 +1,16 @@
+diff a/components/landing/hero-section.tsx b/components/landing/hero-section.tsx	(rejected hunks)
+@@ -151,10 +151,10 @@ return (
+           {[...Array(2)].map((_, i) => (
+             <div key={i} className="flex gap-8 sm:gap-12 lg:gap-16">
+               {[
+-                { value: "Legal stability", label: "Documents, visa status, disputes — resolved.", company: "AGENT 01" },
+-                { value: "Financial readiness", label: "No credit history? We build one.", company: "AGENT 02" },
+-                { value: "Education & career", label: "Your qualifications matter here.", company: "AGENT 03" },
+-                { value: "Health access", label: "Healthcare is a right. Exercise it.", company: "AGENT 04" },
++                { value: "Legal stability", label: "Documents, visa status, disputes — resolved.", company: "ASSISTANT 01" },
++                { value: "Financial readiness", label: "No credit history? We build one.", company: "ASSISTANT 02" },
++                { value: "Education & career", label: "Your qualifications matter here.", company: "ASSISTANT 03" },
++                { value: "Health access", label: "Healthcare is a right. Exercise it.", company: "ASSISTANT 04" },
+               ].map((stat) => (
+                 <div key={`${stat.company}-${i}`} className="flex items-baseline gap-4">
+ <span className="text-2xl sm:text-3xl lg:text-5xl font-display">{stat.value}</span>
