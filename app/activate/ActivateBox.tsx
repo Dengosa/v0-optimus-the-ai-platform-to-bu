@@ -11,7 +11,6 @@ export function ActivateBox() {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
-
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
   async function handleEmailSubmit() {
@@ -33,45 +32,33 @@ export function ActivateBox() {
 
   return (
     <div className="bg-white rounded-2xl p-8 shadow-sm relative overflow-hidden">
-
-      {/* header */}
       <div className="flex justify-between items-center mb-6">
         <span className="font-medium text-[#0f0f0f]">Kommune</span>
         <span className="text-xs px-3 py-1.5 rounded-full bg-[#0f0f0f] text-white">No SA ID needed</span>
       </div>
 
-      {/* tab toggle */}
       <div className="flex justify-center mb-6">
         <div className="inline-flex bg-black/5 rounded-full p-1">
-          <button
-            onClick={() => setTab("whatsapp")}
-            className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${tab === "whatsapp" ? "bg-white text-[#0f0f0f] shadow-sm" : "text-black/40"}`}
-          >WhatsApp</button>
-          <button
-            onClick={() => setTab("email")}
-            className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${tab === "email" ? "bg-white text-[#0f0f0f] shadow-sm" : "text-black/40"}`}
-          >Email</button>
+          <button onClick={() => setTab("whatsapp")} className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${tab === "whatsapp" ? "bg-white text-[#0f0f0f] shadow-sm" : "text-black/40"}`}>WhatsApp</button>
+          <button onClick={() => setTab("email")} className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${tab === "email" ? "bg-white text-[#0f0f0f] shadow-sm" : "text-black/40"}`}>Email</button>
         </div>
       </div>
 
-      {/* headline */}
       <h1 className="font-serif text-3xl text-center leading-snug text-[#0f0f0f] mb-2">
         One conversation,<br />every system involved.
       </h1>
       <p className="text-center text-sm text-black/50 mb-6">
-        Legal, credit, health and education assistants — working for you from day one.
+        Legal, credit, health and education assistants working for you from day one.
       </p>
 
-      {/* testimonial */}
       <div className="bg-black/[0.03] rounded-xl p-4 mb-4 flex gap-3">
         <span className="text-black/20 text-lg leading-none">&ldquo;</span>
         <div>
-          <p className="text-xs text-[#0f0f0f] leading-relaxed">While I wait, Kommune got me into school and helped me open a bank account without an ID. I&apos;m not stuck anymore.</p>
+          <p className="text-xs text-[#0f0f0f] leading-relaxed">While I wait, Kommune got me into school and helped me open a bank account without an ID. I am not stuck anymore.</p>
           <p className="text-[10.5px] text-black/40 mt-1">Khaya, 22 — South Africa</p>
         </div>
       </div>
 
-      {/* pricing */}
       <div className="bg-white border border-black/10 rounded-xl px-4 py-3 flex justify-between items-center mb-4">
         <div>
           <div className="text-xs text-black/50">One-time activation</div>
@@ -80,9 +67,8 @@ export function ActivateBox() {
         <span className="text-xl font-medium text-[#0f0f0f]">R300</span>
       </div>
 
-      {/* CTA */}
       {tab === "whatsapp" ? (
-        
+        <a
           href={`https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_MSG}`}
           target="_blank"
           rel="noopener noreferrer"
@@ -92,23 +78,11 @@ export function ActivateBox() {
           Start on WhatsApp
         </a>
       ) : submitted ? (
-        <div className="text-center text-sm text-green-600 py-3">✅ Submitted — we&apos;ll send payment details shortly.</div>
+        <div className="text-center text-sm text-green-600 py-3">Submitted — we will send payment details shortly.</div>
       ) : (
         <div className="flex flex-col gap-2">
-          <input
-            type="email"
-            placeholder="your@email.com"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            className="w-full border border-black/10 rounded-xl px-4 py-3 text-sm outline-none bg-black/[0.02]"
-          />
-          <button
-            onClick={handleEmailSubmit}
-            disabled={loading}
-            className="w-full h-12 rounded-full bg-[#0f0f0f] text-white text-sm font-medium"
-          >
-            {loading ? "Sending..." : "Request activation"}
-          </button>
+          <input type="email" placeholder="your@email.com" value={email} onChange={e => setEmail(e.target.value)} className="w-full border border-black/10 rounded-xl px-4 py-3 text-sm outline-none bg-black/[0.02]" />
+          <button onClick={handleEmailSubmit} disabled={loading} className="w-full h-12 rounded-full bg-[#0f0f0f] text-white text-sm font-medium">{loading ? "Sending..." : "Request activation"}</button>
         </div>
       )}
 
