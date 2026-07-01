@@ -127,6 +127,7 @@ return (
               <Link href="/activate">
                 Start My Journey
                 <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
+              </Link>
             </Button>
             <Button asChild
               size="lg" 
@@ -173,4 +174,5 @@ return (
     </section>
   );
 }
+
 
