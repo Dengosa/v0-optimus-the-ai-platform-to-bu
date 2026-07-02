@@ -52,39 +52,12 @@ export function AgentDemoSection() {
 
   return (
     <section id="demo" className="relative py-24 lg:py-32 overflow-hidden">
-      {/* Ambient glow seeded behind the device -- two independently drifting
-          blobs, kept within the real brand palette (acid green + off-white).
-          Purely decorative: aria-hidden, pointer-events-none, no effect on
-          layout or any data flow below. */}
-      <style jsx>{`
-        @keyframes demoGlowDrift {
-          0%,
-          100% {
-            transform: translate(0, 0) scale(1);
-          }
-          33% {
-            transform: translate(30px, -40px) scale(1.08);
-          }
-          66% {
-            transform: translate(-20px, 25px) scale(0.95);
-          }
-        }
-      `}</style>
+      {/* Ambient glow seeded behind the device, not the whole section --
+          keeps the boldness contained to one signature element. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute left-[18%] top-[24%] w-[680px] h-[680px] rounded-full opacity-[0.18] blur-[100px]"
-        style={{
-          background: "radial-gradient(circle, #b8ff57, transparent 70%)",
-          animation: "demoGlowDrift 14s ease-in-out infinite",
-        }}
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute right-[14%] top-1/2 w-[460px] h-[460px] rounded-full opacity-[0.10] blur-[90px]"
-        style={{
-          background: "radial-gradient(circle, #f5f5f0, transparent 72%)",
-          animation: "demoGlowDrift 18s ease-in-out infinite reverse",
-        }}
+        className="pointer-events-none absolute left-1/4 top-1/3 -translate-x-1/2 w-[640px] h-[640px] rounded-full opacity-[0.15] blur-[120px]"
+        style={{ background: "radial-gradient(circle, #b8ff57, transparent 70%)" }}
       />
 
       <div className="relative max-w-[1400px] mx-auto px-6 lg:px-12">
@@ -95,7 +68,6 @@ export function AgentDemoSection() {
               <div>
                 <div className="font-semibold">Preview mode</div>
                 <div className="text-sm opacity-90">
-
                   Activate to unlock email drafting, appointment scheduling, and ongoing support
                 </div>
               </div>

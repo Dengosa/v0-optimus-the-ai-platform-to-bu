@@ -32,7 +32,7 @@ export default function CareersPage() {
               { role: "Legal Research Intern", type: "Internship", description: "Help us map the legal landscape for migrants globally. Immigration law, asylum processes, permit pathways across different countries." },
               { role: "Community Growth Intern", type: "Internship", description: "Help us reach migrant communities worldwide. WhatsApp, Facebook groups, on the ground." },
               { role: "Product Intern", type: "Internship", description: "Work directly with the founder on features, user research, and making Kommune feel like it was built for real people." },
-              { role: "AI & Engineering Intern", type: "Internship", description: "Help build and improve the AI agents. Python, FastAPI, Next.js. Passion for impact required." },
+              { role: "AI & Engineering Intern", type: "Internship", description: "Help build and improve the AI assistants. Python, FastAPI, Next.js. Passion for impact required." },
               { role: "Full Stack Engineer", type: "Coming Soon", description: "Senior role opening as we scale. Next.js, FastAPI, Supabase. Equity on the table." },
               { role: "Head of Partnerships", type: "Coming Soon", description: "NGOs, clinics, legal aid orgs, banks. We need someone to build our global ecosystem." },
             ].map((job) => (

@@ -71,7 +71,7 @@ const metrics: Metric[] = [
     value: 5,
     suffix: "",
     prefix: "",
-    label: "Specialist agents working for you",
+    label: "Specialist assistants working for you",
   },
   {
     // Placeholder until we fetch waitlist count

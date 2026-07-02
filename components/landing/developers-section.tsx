@@ -8,7 +8,7 @@ const codeExamples = [
     label: "Vault",
     code: `vault.read('lease-agreement')
 
-// Agents pull documents
+// Assistants pull documents
 // when executing tasks
 status: 'encrypted'`,
   },
@@ -42,7 +42,7 @@ const features = [
     description: "Every output written back with full history."
   },
   { 
-    title: "Agents pull & write", 
+    title: "Assistants pull & write",
     description: "Documents used and produced automatically."
   },
   { 
@@ -124,7 +124,7 @@ export function DevelopersSection() {
               <span className="text-muted-foreground">Every proof.</span>
             </h2>
             <p className="text-xl text-muted-foreground mb-12 leading-relaxed">
-              Your agents pull documents from the Vault when executing tasks and write 
+              Your Assistants pull documents from the Vault when executing tasks and write 
               every output back — with a complete, immutable audit trail.
             </p>
             

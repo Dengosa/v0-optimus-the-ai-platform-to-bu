@@ -11,15 +11,15 @@ const footerLinks = {
     { name: "Careers", href: "/", badge: "Hiring" },
   ],
   "The boring": [
-    { name: "Terms", href: "/" },
-    { name: "Privacy", href: "/" },
+    { name: "Terms", href: "/terms" },
+    { name: "Privacy", href: "/privacy" },
     { name: "Press", href: "/" },
     { name: "Compliance", href: "#security" },
   ],
   "The bold": [
     { name: "X", href: "#" },
     { name: "Instagram", href: "#" },
-    { name: "WhatsApp", href: "#" },
+    { name: "WhatsApp", href: "https://wa.me/27796463376" },
     { name: "Community", href: "#" },
   ],
 };
@@ -27,7 +27,7 @@ const footerLinks = {
 const socialLinks = [
   { name: "X", href: "#" },
   { name: "Instagram", href: "#" },
-  { name: "WhatsApp", href: "#" },
+  { name: "WhatsApp", href: "https://wa.me/27796463376" },
 ];
 
 export function FooterSection() {
