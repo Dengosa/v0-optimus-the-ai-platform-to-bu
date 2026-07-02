@@ -34,7 +34,7 @@ export function ActivateBox() {
     <div className="bg-white rounded-2xl p-8 shadow-sm relative overflow-hidden">
       <div className="flex justify-between items-center mb-6">
         <span className="font-medium text-[#0f0f0f]">Kommune</span>
-        <span className="text-xs px-3 py-1.5 rounded-full bg-[#0f0f0f] text-white">Made for you</span>
+        <span className="text-xs px-3 py-1.5 rounded-full bg-[#0f0f0f] text-white">No SA ID needed</span>
       </div>
 
       <div className="flex justify-center mb-6">
@@ -93,5 +93,3 @@ export function ActivateBox() {
     </div>
   );
 }
-
-
